@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { jsPDF } from "jspdf";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -265,6 +266,140 @@ export default function AphasiaLens() {
   const [aiError, setAiError] = useState(null);
   const aiRef = useRef(null);
 
+  // Editable AI notes state
+  const [editedNotes, setEditedNotes] = useState({});
+  const [savedNotes, setSavedNotes] = useState({});
+  const [noteSaved, setNoteSaved] = useState({});
+
+  function handleNoteChange(key, val) {
+    setEditedNotes(prev => ({ ...prev, [key]: val }));
+    setNoteSaved(prev => ({ ...prev, [key]: false }));
+  }
+  function handleNoteSave(key) {
+    setSavedNotes(prev => ({ ...prev, [key]: editedNotes[key] ?? getDefaultNote(key) }));
+    setNoteSaved(prev => ({ ...prev, [key]: true }));
+    setTimeout(() => setNoteSaved(prev => ({ ...prev, [key]: false })), 2000);
+  }
+  function getDefaultNote(key) {
+    if (!aiResult) return "";
+    if (key === "clinical_summary") return aiResult.clinical_summary || "";
+    if (key === "bilingual_notes") return aiResult.bilingual_notes || "";
+    if (key === "home_programme") return aiResult.home_programme || "";
+    if (key === "progress_notes") return aiResult.progress_notes || "";
+    if (key === "prognosis") return aiResult.prognosis || "";
+    return "";
+  }
+  function getNoteValue(key) {
+    return key in editedNotes ? editedNotes[key] : getDefaultNote(key);
+  }
+  function getDisplayNote(key) {
+    return key in savedNotes ? savedNotes[key] : getDefaultNote(key);
+  }
+
+  // jsPDF download
+  async function downloadPDF() {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pw = 170; // printable width
+    let y = 18;
+
+    function heading(text, size=14, color=[6,182,212]) {
+      doc.setFontSize(size); doc.setTextColor(...color); doc.setFont("helvetica","bold");
+      doc.text(text, 20, y); y += size * 0.5 + 3;
+    }
+    function body(text, size=10) {
+      doc.setFontSize(size); doc.setTextColor(80,80,80); doc.setFont("helvetica","normal");
+      const lines = doc.splitTextToSize(String(text||"—"), pw);
+      lines.forEach(l => {
+        if (y > 275) { doc.addPage(); y = 18; }
+        doc.text(l, 20, y); y += size * 0.45 + 1.2;
+      });
+      y += 2;
+    }
+    function divider() { doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; }
+
+    // Header
+    doc.setFillColor(6,16,31); doc.rect(0,0,210,30,"F");
+    doc.setFontSize(16); doc.setTextColor(6,182,212); doc.setFont("helvetica","bold");
+    doc.text("AphasiaLens v2.0 — WAB Clinical Report", 20, 14);
+    doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont("helvetica","normal");
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-IN", {day:"2-digit",month:"short",year:"numeric"})}`, 20, 22);
+    doc.text("For clinical use under qualified SLP supervision", 120, 22);
+    y = 38;
+
+    // Patient
+    heading("Patient Details", 12, [139,92,246]);
+    body(`Name: ${ch.name||"—"}   Age/Sex: ${ch.age||"—"} / ${ch.sex}   Languages: ${ch.languagesSpoken||"—"}`);
+    body(`Time Post Onset: ${ch.timePostOnset||"—"}   Lesion Site: ${ch.lesionSite||"—"}   Dominant Hand: ${ch.dominantHand}`);
+    body(`Education: ${ch.education||"—"}   Pre-stroke Occupation: ${ch.occupationPreStroke||"—"}`);
+    divider();
+
+    // WAB Scores
+    heading("WAB Scores & Classification", 12, [6,182,212]);
+    const pr = preResult, po = postResult;
+    body(`PRE  — AQ: ${pr.aq}/100 | Type: ${pr.type} | Severity: ${pr.sev}`);
+    body(`  Spontaneous Speech: ${pr.ss}/20 | AVC: ${pr.avc}/200 | Repetition: ${pr.rep}/100 | Naming: ${pr.nam}/100`);
+    if (wabPost.ss_info+wabPost.avc_yesno > 0) {
+      body(`POST — AQ: ${po.aq}/100 | Type: ${po.type} | Severity: ${po.sev}`);
+      body(`  Spontaneous Speech: ${po.ss}/20 | AVC: ${po.avc}/200 | Repetition: ${po.rep}/100 | Naming: ${po.nam}/100`);
+      const diff = Math.round((po.aq - pr.aq)*10)/10;
+      body(`AQ Change: ${diff>0?"+":""}${diff} points`);
+    }
+    divider();
+
+    if (aiResult) {
+      heading("AI Clinical Analysis", 12, [16,185,129]);
+
+      heading("Clinical Summary", 10, [6,182,212]);
+      body(getDisplayNote("clinical_summary"));
+
+      heading("Linguistic Profile", 10, [139,92,246]);
+      body(`Lexical Retrieval: ${aiResult.lexical_retrieval||"—"}`);
+      body(`Agrammatism: ${aiResult.agrammatism?.present?"Present":"Absent"} — Severity: ${aiResult.agrammatism?.severity||"—"}`);
+      if (aiResult.agrammatism?.features?.length) body(`Features: ${aiResult.agrammatism.features.join(", ")}`);
+      if (aiResult.auditory_comprehension_profile) body(`AVC Pattern: ${aiResult.auditory_comprehension_profile}`);
+
+      if (aiResult.paraphasias?.length) {
+        heading("Paraphasia Inventory", 10, [239,68,68]);
+        aiResult.paraphasias.forEach(p => body(`• [${p.type}] ${p.example} — ${p.note}`));
+      }
+
+      if (getDisplayNote("bilingual_notes")) {
+        heading("Bilingual / Code-Switching Notes", 10, [245,158,11]);
+        body(getDisplayNote("bilingual_notes"));
+      }
+
+      if (aiResult.intervention_priorities?.length) {
+        heading("Evidence-Based Intervention Priorities", 10, [16,185,129]);
+        aiResult.intervention_priorities.forEach(item => {
+          body(`${item.priority}. [${item.domain}] ${item.strategy}`);
+          body(`   Rationale: ${item.rationale}`);
+        });
+      }
+
+      if (getDisplayNote("home_programme")) {
+        heading("Home Programme", 10, [16,185,129]);
+        body(getDisplayNote("home_programme"));
+      }
+
+      if (getDisplayNote("progress_notes")) {
+        heading("Progress Notes", 10, [59,130,246]);
+        body(getDisplayNote("progress_notes"));
+      }
+
+      heading("Prognosis", 10, [139,92,246]);
+      body(getDisplayNote("prognosis"));
+    }
+
+    divider();
+    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont("helvetica","italic");
+    doc.text("Mr. Hemaraja Nayaka S. | Associate Professor, Dept. of Audiology & SLP, Yenepoya Medical College Hospital, Mangaluru", 20, y);
+    y += 5;
+    doc.text("RCI: A30294 | ISHA: L-13072161 | AphasiaLens v2.0 powered by Sarvam AI & Anthropic Claude", 20, y);
+
+    const name = ch.name ? ch.name.replace(/\s+/g,"_") : "Patient";
+    doc.save(`AphasiaLens_${name}_${new Date().toISOString().slice(0,10)}.pdf`);
+  }
+
   // ── Sarvam STT State ──
   const [sarvamKey, setSarvamKey] = useState("");
   const [sarvamLang, setSarvamLang] = useState("kn-IN");
@@ -314,7 +449,7 @@ Additional clinical notes: ${specFn.additionalNotes||"None"}
 ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
 
     try {
-      const res = await fetch("/.netlify/functions/claude-proxy",{
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:[{role:"user",content:prompt}]})
       });
@@ -443,7 +578,7 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
     if (!sarvamTranscript.trim()) { setSarvamError("Transcribe audio first before running analysis."); return; }
     setLingoLoading(true); setSarvamError("");
     try {
-      const res = await fetch("/.netlify/functions/claude-proxy", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           model:"claude-sonnet-4-20250514", max_tokens:1000,
@@ -884,7 +1019,8 @@ Perform complete multi-level linguistic analysis.`
               <div>
                 {/* Summary Banner */}
                 <Card title="Clinical Summary" icon="⬡" accent={C.teal}>
-                  <p style={{margin:0,fontSize:13,lineHeight:1.8,color:C.text,...fnt}}>{aiResult.clinical_summary}</p>
+                  <textarea value={getNoteValue("clinical_summary")} onChange={e=>handleNoteChange("clinical_summary",e.target.value)} rows={4} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:13,padding:"8px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.8,...fnt}}/>
+                  <button onClick={()=>handleNoteSave("clinical_summary")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["clinical_summary"]?C.green:C.teal,border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["clinical_summary"]?"✓ Saved":"💾 Save"}</button>
                 </Card>
 
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -921,7 +1057,8 @@ Perform complete multi-level linguistic analysis.`
                 {/* Bilingual Notes */}
                 {aiResult.bilingual_notes && (
                   <Card title="Bilingual / Code-Switching Notes" icon="🔤" accent={C.accent}>
-                    <p style={{margin:0,fontSize:13,lineHeight:1.8,color:C.text,...fnt}}>{aiResult.bilingual_notes}</p>
+                    <textarea value={getNoteValue("bilingual_notes")} onChange={e=>handleNoteChange("bilingual_notes",e.target.value)} rows={3} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:13,padding:"8px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.8,...fnt}}/>
+                    <button onClick={()=>handleNoteSave("bilingual_notes")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["bilingual_notes"]?C.green:C.accent,border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["bilingual_notes"]?"✓ Saved":"💾 Save"}</button>
                   </Card>
                 )}
 
@@ -944,7 +1081,8 @@ Perform complete multi-level linguistic analysis.`
                   {aiResult.home_programme && (
                     <div style={{marginTop:12,padding:"10px 14px",background:`${C.green}10`,border:`1px solid ${C.green}33`,borderRadius:7}}>
                       <div style={{fontSize:11,color:C.green,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Home Programme</div>
-                      <p style={{margin:0,fontSize:12,color:C.text,...fnt,lineHeight:1.7}}>{aiResult.home_programme}</p>
+                      <textarea value={getNoteValue("home_programme")} onChange={e=>handleNoteChange("home_programme",e.target.value)} rows={3} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:12,padding:"7px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.7,...fnt}}/>
+                      <button onClick={()=>handleNoteSave("home_programme")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["home_programme"]?C.green:"#059669",border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["home_programme"]?"✓ Saved":"💾 Save"}</button>
                     </div>
                   )}
                 </Card>
@@ -953,23 +1091,34 @@ Perform complete multi-level linguistic analysis.`
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                   {aiResult.progress_notes && (
                     <Card title="Progress Notes (Pre → Post)" icon="📈" accent={C.blue}>
-                      <p style={{margin:0,fontSize:13,lineHeight:1.8,color:C.text,...fnt}}>{aiResult.progress_notes}</p>
+                      <textarea value={getNoteValue("progress_notes")} onChange={e=>handleNoteChange("progress_notes",e.target.value)} rows={4} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:13,padding:"8px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.8,...fnt}}/>
+                      <button onClick={()=>handleNoteSave("progress_notes")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["progress_notes"]?C.green:C.blue,border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["progress_notes"]?"✓ Saved":"💾 Save"}</button>
                     </Card>
                   )}
                   <Card title="Prognosis" icon="🔮" accent={C.purple}>
-                    <p style={{margin:0,fontSize:13,lineHeight:1.8,color:C.text,...fnt}}>{aiResult.prognosis}</p>
-                    <div style={{marginTop:10,padding:"8px 10px",background:C.surface,borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>
+                    <textarea value={getNoteValue("prognosis")} onChange={e=>handleNoteChange("prognosis",e.target.value)} rows={4} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:13,padding:"8px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.8,...fnt}}/>
+                    <button onClick={()=>handleNoteSave("prognosis")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["prognosis"]?C.green:C.purple,border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["prognosis"]?"✓ Saved":"💾 Save"}</button>
+                    <div style={{marginTop:8,padding:"8px 10px",background:C.surface,borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>
                       ⚠ AI-generated. For clinical use only under supervision of a qualified SLP.
                     </div>
                   </Card>
                 </div>
 
-                <button onClick={runAnalysis} disabled={aiLoading} style={{
-                  width:"100%",marginTop:4,padding:"11px",border:`1px solid ${C.tealDim}`,borderRadius:8,color:C.teal,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,
-                  background:C.tealDim,transition:"all 0.2s"
-                }}>
-                  ↺ Re-run Analysis
-                </button>
+                <div style={{display:"flex",gap:10,marginTop:4}}>
+                  <button onClick={runAnalysis} disabled={aiLoading} style={{
+                    flex:1,padding:"11px",border:`1px solid ${C.tealDim}`,borderRadius:8,color:C.teal,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,
+                    background:C.tealDim,transition:"all 0.2s"
+                  }}>
+                    ↺ Re-run Analysis
+                  </button>
+                  <button onClick={downloadPDF} style={{
+                    flex:1,padding:"11px",border:"none",borderRadius:8,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",...fnt,
+                    background:`linear-gradient(135deg,#7c3aed,#ec4899)`,
+                    boxShadow:"0 4px 18px #7c3aed33",transition:"all 0.2s"
+                  }}>
+                    ⬇ Download PDF Report
+                  </button>
+                </div>
               </div>
             )}
           </div>
