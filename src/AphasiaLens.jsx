@@ -403,12 +403,14 @@ export default function AphasiaLens() {
 
     // Institution block (left)
     y = 10;
-    doc.setFontSize(16); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
-    doc.text("WESTERN APHASIA BATTERY", ML, y);
-    doc.setFontSize(8.5); doc.setTextColor(...TEAL); doc.setFont("helvetica","bold");
-    doc.text("CLINICAL ASSESSMENT REPORT", ML, y+5.5);
+    doc.setFontSize(20); doc.setTextColor(...TEAL); doc.setFont("helvetica","bold");
+    doc.text("AphasiaLens", ML, y);
+    doc.setFontSize(7); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
+    doc.text("v2.0", ML + doc.getTextWidth("AphasiaLens") + 2, y);
+    doc.setFontSize(8.5); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
+    doc.text("WAB CLINICAL ASSESSMENT REPORT", ML, y+5.5);
     doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
-    doc.text("Bilingual Administration  ·  Kannada – English", ML, y+10);
+    doc.text("Bilingual Administration  ·  Kannada – English  ·  WAB (Kertesz, 1982)", ML, y+10);
 
     // Report meta (right)
     const reportDate = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"});
