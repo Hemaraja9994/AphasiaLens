@@ -305,10 +305,10 @@ export default function AphasiaLens() {
           GREEN=[22,163,74], RED=[220,38,38], AMBER=[180,120,0], LGREY=[248,249,250],
           MGREY=[226,232,240], DGREY=[100,116,139], WHITE=[255,255,255];
 
-    const typeCol = TYPE_COLOR[pr.type]||"#0ea5e9";
-    const tcRGB = [parseInt(typeCol.slice(1,3),16),parseInt(typeCol.slice(3,5),16),parseInt(typeCol.slice(5,7),16)];
     const pr = preResult, po = postResult;
     const hasPost = wabPost.ss_info + wabPost.avc_yesno > 0;
+    const typeCol = TYPE_COLOR[pr.type]||"#0ea5e9";
+    const tcRGB = [parseInt(typeCol.slice(1,3),16),parseInt(typeCol.slice(3,5),16),parseInt(typeCol.slice(5,7),16)];
     let secNum = 1;
 
     // ── HELPERS ──
@@ -498,7 +498,7 @@ export default function AphasiaLens() {
     doc.roundedRect(ML, y, PW, 26, 3, 3, "FD");
     // AQ circle placeholder
     doc.setFillColor(...WHITE);
-    doc.circle(ML+16, y+13, 11, "FD");
+    doc.ellipse(ML+16, y+13, 11, 11, "FD");
     doc.setFontSize(14); doc.setFont("helvetica","bold"); doc.setTextColor(...tcRGB);
     doc.text(String(pr.aq), ML+16, y+11, {align:"center"});
     doc.setFontSize(6.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
@@ -694,7 +694,7 @@ export default function AphasiaLens() {
           doc.setFillColor(...ic.map(v=>Math.min(255,v+205)));
           doc.setDrawColor(...ic); doc.setLineWidth(0.3);
           doc.roundedRect(ML+2, y, PW-4, 14, 2, 2, "FD");
-          doc.setFillColor(...ic); doc.circle(ML+8, y+7, 4, "F");
+          doc.setFillColor(...ic); doc.ellipse(ML+8, y+7, 4, 4, "F");
           doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
           doc.text(String(item.priority), ML+8, y+8.2, {align:"center"});
           doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...ic);
