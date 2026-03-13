@@ -1,5 +1,5 @@
-// Netlify Function: claude-proxy.js
-// Secure server-side proxy — API key never exposed to browser
+const https = require("https");
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -21,35 +21,57 @@ exports.handler = async (event) => {
   if (!ANTHROPIC_API_KEY) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "ANTHROPIC_API_KEY environment variable not set." }),
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "ANTHROPIC_API_KEY not set." }),
     };
   }
 
-  try {
-    const body = JSON.parse(event.body);
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(body),
-    });
+  return new Promise((resolve) => {
+    try {
+      const payload = event.body || "{}";
+      const options = {
+        hostname: "api.anthropic.com",
+        path: "/v1/messages",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+      };
 
-    const data = await response.json();
-    return {
-      statusCode: response.status,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(data),
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
-  }
+      const req = https.request(options, (res) => {
+        let data = "";
+        res.on("data", (chunk) => { data += chunk; });
+        res.on("end", () => {
+          resolve({
+            statusCode: res.statusCode,
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+            },
+            body: data,
+          });
+        });
+      });
+
+      req.on("error", (err) => {
+        resolve({
+          statusCode: 500,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ error: err.message }),
+        });
+      });
+
+      req.write(payload);
+      req.end();
+    } catch (err) {
+      resolve({
+        statusCode: 500,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: err.message }),
+      });
+    }
+  });
 };
