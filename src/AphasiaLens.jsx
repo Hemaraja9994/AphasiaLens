@@ -304,8 +304,7 @@ export default function AphasiaLens() {
 
     function checkPage(need=10) {
       if (y + need > 278) { doc.addPage(); y = 16; }
-    }
-    function heading(text, size=13, color=[6,182,212]) {
+    }    function heading(text, size=13, color=[6,182,212]) {
       checkPage(10);
       doc.setFontSize(size); doc.setTextColor(...color); doc.setFont("helvetica","bold");
       doc.text(text, 20, y); y += size * 0.45 + 4;
@@ -428,18 +427,19 @@ export default function AphasiaLens() {
     subheading("III. Repetition  (Max: 100)");
     scoreRow("REPETITION TOTAL", pr.rep, 100, 0);
     y += 2;
+    checkPage(50); // ensure Naming section fits on one page
     subheading("IV. Naming  (Max: 100)");
     scoreRow("Object Naming", wabPre.nam_obj, 60, 4);
     scoreRow("Word Fluency", wabPre.nam_flu, 20, 4);
     scoreRow("Sentence Completion", wabPre.nam_sc, 10, 4);
     scoreRow("Responsive Speech", wabPre.nam_rs, 10, 4);
     scoreRow("NAMING TOTAL", pr.nam, 100, 0);
-    y += 2;
-    checkPage(12);
-    doc.setFillColor(6,16,31); doc.roundedRect(20, y, pw, 10, 2, 2, "F");
+    y += 4;
+    checkPage(16);
+    doc.setFillColor(6,16,31); doc.roundedRect(20, y, pw, 12, 2, 2, "F");
     doc.setFontSize(12); doc.setTextColor(6,182,212); doc.setFont("helvetica","bold");
-    doc.text(`APHASIA QUOTIENT (AQ):  ${pr.aq} / 100  —  ${pr.type} Aphasia  (${pr.sev})`, 24, y+7);
-    y += 16;
+    doc.text(`APHASIA QUOTIENT (AQ):  ${pr.aq} / 100  —  ${pr.type} Aphasia  (${pr.sev})`, 24, y+8);
+    y += 18;
     divider();
 
     // ── POST INTERVENTION (if filled) ──
@@ -504,14 +504,24 @@ export default function AphasiaLens() {
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFillColor(240,240,240); doc.rect(0,285,210,12,"F");
-      doc.setFontSize(7.5); doc.setTextColor(100,100,100); doc.setFont("helvetica","normal");
-      const assessedBy = ch.clinician ? `Assessed by: ${ch.clinician}${ch.supervisor ? "  |  Supervisor: "+ch.supervisor : ""}` : "Assessed by: ___________________________";
-      const address = ch.clinicAddress || "Clinic / Hospital: ___________________________";
-      doc.text(assessedBy, 20, 290);
-      doc.text(address, 20, 295);
-      doc.setFont("helvetica","italic"); doc.setTextColor(150,150,150);
-      doc.text(`AphasiaLens v2.0  |  Page ${i} of ${pageCount}  |  For clinical use under qualified SLP supervision`, 115, 295);
+      // Footer background
+      doc.setFillColor(245,245,245); doc.rect(0,282,210,15,"F");
+      doc.setDrawColor(200,200,200); doc.line(0,282,210,282);
+      doc.setFontSize(7); doc.setTextColor(90,90,90); doc.setFont("helvetica","normal");
+      // Left: clinician details
+      const assessedBy = ch.clinician
+        ? `Assessed by: ${ch.clinician}${ch.supervisor ? "   Supervisor: "+ch.supervisor : ""}`
+        : "Assessed by: ___________________________";
+      const address = ch.clinicAddress
+        ? ch.clinicAddress
+        : "Institution: ___________________________";
+      doc.text(assessedBy, 8, 288);
+      doc.text(address, 8, 294);
+      // Right: tool info + page
+      doc.setFont("helvetica","italic"); doc.setTextColor(140,140,140);
+      const pageText = `AphasiaLens v2.0   |   Page ${i} of ${pageCount}`;
+      doc.text(pageText, 202, 288, { align: "right" });
+      doc.text("For clinical use under qualified SLP supervision only", 202, 294, { align: "right" });
     }
 
     const name = ch.name ? ch.name.replace(/\s+/g,"_") : "Patient";
@@ -567,7 +577,7 @@ Additional clinical notes: ${specFn.additionalNotes||"None"}
 ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
+      const res = await fetch("/.netlify/functions/claude-proxy",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:[{role:"user",content:prompt}]})
       });
@@ -696,7 +706,7 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
     if (!sarvamTranscript.trim()) { setSarvamError("Transcribe audio first before running analysis."); return; }
     setLingoLoading(true); setSarvamError("");
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/.netlify/functions/claude-proxy", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           model:"claude-sonnet-4-20250514", max_tokens:1000,
