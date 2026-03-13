@@ -401,16 +401,24 @@ export default function AphasiaLens() {
     doc.setFillColor(...NAVY); doc.rect(0, 0, 210, 3, "F");
     doc.setFillColor(...TEAL); doc.rect(0, 3, 210, 1.5, "F");
 
-    // Institution block (left)
+    // Brand block (left)
     y = 10;
-    doc.setFontSize(20); doc.setTextColor(...TEAL); doc.setFont("helvetica","bold");
-    doc.text("AphasiaLens", ML, y);
-    doc.setFontSize(7); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
-    doc.text("v2.0", ML + doc.getTextWidth("AphasiaLens") + 2, y);
-    doc.setFontSize(8.5); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
-    doc.text("WAB CLINICAL ASSESSMENT REPORT", ML, y+5.5);
+    // "Aphasia" in teal, "Lens" in navy — measure each part carefully
+    doc.setFontSize(20); doc.setFont("helvetica","bold");
+    doc.setTextColor(...TEAL);
+    doc.text("Aphasia", ML, y);
+    const w1 = doc.getTextWidth("Aphasia");
+    doc.setTextColor(...NAVY);
+    doc.text("Lens", ML + w1, y);
+    const w2 = doc.getTextWidth("Lens");
+    // v2.0 superscript — separate line, smaller, after the brand name
     doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
-    doc.text("Bilingual Administration  ·  Kannada – English  ·  WAB (Kertesz, 1982)", ML, y+10);
+    doc.text("v2.0", ML + w1 + w2 + 1.5, y - 5);
+    // Subtitle lines
+    doc.setFontSize(8.5); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
+    doc.text("WAB CLINICAL ASSESSMENT REPORT", ML, y + 6);
+    doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
+    doc.text("Bilingual Administration  ·  Kannada – English  ·  WAB (Kertesz, 1982)", ML, y + 11);
 
     // Report meta (right)
     const reportDate = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"});
@@ -821,11 +829,14 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
     try {
       const res = await fetch("/.netlify/functions/claude-proxy",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:[{role:"user",content:prompt}]})
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,system:SYS,messages:[{role:"user",content:prompt}]})
       });
       const data = await res.json();
       const raw = data.content?.[0]?.text||"";
-      setAiResult(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+      // Robust JSON extraction — find outermost { } block
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found in response");
+      setAiResult(JSON.parse(jsonMatch[0]));
       setPage("analysis");
       setTimeout(()=>aiRef.current?.scrollIntoView({behavior:"smooth"}),100);
     } catch(e) { setAiError("Analysis failed: "+e.message); }
@@ -951,7 +962,7 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
       const res = await fetch("/.netlify/functions/claude-proxy", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
-          model:"claude-sonnet-4-20250514", max_tokens:1000,
+          model:"claude-sonnet-4-20250514", max_tokens:2500,
           system: LINGO_SYS,
           messages:[{ role:"user", content:
             `Patient: ${ch.name||"Unknown"}, Age: ${ch.age||"?"}, Languages: ${ch.languagesSpoken||"Kannada, English"}, Aphasia type (WAB): ${curResult.type}
@@ -967,7 +978,9 @@ Perform complete multi-level linguistic analysis.`
       });
       const data = await res.json();
       const raw = data.content?.[0]?.text || "";
-      setLingoResult(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found in response");
+      setLingoResult(JSON.parse(jsonMatch[0]));
     } catch(e) { setSarvamError("Linguistic analysis failed: " + e.message); }
     setLingoLoading(false);
   }
