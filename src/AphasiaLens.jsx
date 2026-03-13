@@ -299,233 +299,473 @@ export default function AphasiaLens() {
   // jsPDF download
   async function downloadPDF() {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const pw = 170;
-    let y = 18;
+    const ML = 15, MR = 195, PW = MR - ML;
+    let y = 0;
+    const NAVY=[15,40,80], TEAL=[0,128,128], SLATE=[71,85,105], DARK=[30,41,59],
+          GREEN=[22,163,74], RED=[220,38,38], AMBER=[180,120,0], LGREY=[248,249,250],
+          MGREY=[226,232,240], DGREY=[100,116,139], WHITE=[255,255,255];
 
-    function checkPage(need=10) {
-      if (y + need > 278) { doc.addPage(); y = 16; }
-    }    function heading(text, size=13, color=[6,182,212]) {
-      checkPage(10);
-      doc.setFontSize(size); doc.setTextColor(...color); doc.setFont("helvetica","bold");
-      doc.text(text, 20, y); y += size * 0.45 + 4;
-    }
-    function subheading(text, color=[100,100,100]) {
-      checkPage(7);
-      doc.setFontSize(9); doc.setTextColor(...color); doc.setFont("helvetica","bold");
-      doc.text(text.toUpperCase(), 20, y); y += 6;
-    }
-    function body(text, indent=0, size=10) {
-      checkPage(6);
-      doc.setFontSize(size); doc.setTextColor(55,65,81); doc.setFont("helvetica","normal");
-      const lines = doc.splitTextToSize(String(text||"—"), pw - indent);
-      lines.forEach(l => { checkPage(5); doc.text(l, 20+indent, y); y += size*0.42+1.5; });
-    }
-    function divider(color=[220,220,220]) {
-      checkPage(6);
-      doc.setDrawColor(...color); doc.line(20, y, 190, y); y += 5;
-    }
-    function labelValue(label, value, valueColor=[30,30,30]) {
-      checkPage(6);
-      doc.setFontSize(10); doc.setFont("helvetica","bold"); doc.setTextColor(100,100,100);
-      doc.text(label + ":", 22, y);
-      doc.setFont("helvetica","normal"); doc.setTextColor(...valueColor);
-      doc.text(String(value||"—"), 75, y);
-      y += 6;
-    }
-    function scoreRow(label, value, max, indent=0) {
-      checkPage(6);
-      const pct = max > 0 ? value/max : 0;
-      const col = pct >= 0.7 ? [16,185,129] : pct >= 0.4 ? [245,158,11] : [239,68,68];
-      doc.setFontSize(10); doc.setFont("helvetica","normal"); doc.setTextColor(55,65,81);
-      doc.text(label, 22+indent, y);
-      doc.setFont("helvetica","bold"); doc.setTextColor(...col);
-      doc.text(`${value} / ${max}  (${Math.round(pct*100)}%)`, 140, y);
-      // mini bar
-      doc.setFillColor(230,230,230); doc.rect(130, y-3.5, 30, 3, "F");
-      doc.setFillColor(...col); doc.rect(130, y-3.5, 30*pct, 3, "F");
-      y += 6.5;
-    }
-
+    const typeCol = TYPE_COLOR[pr.type]||"#0ea5e9";
+    const tcRGB = [parseInt(typeCol.slice(1,3),16),parseInt(typeCol.slice(3,5),16),parseInt(typeCol.slice(5,7),16)];
     const pr = preResult, po = postResult;
     const hasPost = wabPost.ss_info + wabPost.avc_yesno > 0;
-    const typeCol = TYPE_COLOR[pr.type] || "#06b6d4";
-    const typeRGB = typeCol.startsWith("#") ? [
-      parseInt(typeCol.slice(1,3),16),
-      parseInt(typeCol.slice(3,5),16),
-      parseInt(typeCol.slice(5,7),16)
-    ] : [6,182,212];
+    let secNum = 1;
 
-    // ── HEADER BANNER ──
-    doc.setFillColor(6,16,31); doc.rect(0,0,210,32,"F");
-    doc.setFontSize(17); doc.setTextColor(6,182,212); doc.setFont("helvetica","bold");
-    doc.text("AphasiaLens v2.0", 20, 13);
-    doc.setFontSize(9); doc.setTextColor(180,180,180); doc.setFont("helvetica","normal");
-    doc.text("WAB Clinical Assessment Report  |  Bilingual (Kannada-English)", 20, 21);
-    doc.setFontSize(8); doc.setTextColor(120,120,120);
-    doc.text(`Generated: ${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}`, 20, 28);
-    doc.text("For clinical use under qualified SLP supervision only", 108, 28);
-    y = 42;
+    // ── HELPERS ──
+    function newPage() { doc.addPage(); y = 28; }
+    function guard(need) { if (y + need > 274) newPage(); }
 
-    // ── PATIENT DETAILS ──
-    heading("1. Patient Details", 12, [139,92,246]);
-    labelValue("Name", ch.name||"Not provided");
-    labelValue("Age / Sex", `${ch.age||"—"} years / ${ch.sex}`);
-    labelValue("Languages", ch.languagesSpoken||"—");
-    labelValue("Dominant Hand", ch.dominantHand||"—");
-    labelValue("Education", ch.education||"—");
-    labelValue("Pre-stroke Occupation", ch.occupationPreStroke||"—");
-    labelValue("Time Post Onset", ch.timePostOnset||"—");
-    labelValue("Lesion Site", ch.lesionSite||"—");
-    labelValue("WAB Language Used", lang==="en"?"English":"Kannada-English Bilingual");
-    if (ch.strokeHistory) { checkPage(8); subheading("Stroke History"); body(ch.strokeHistory, 2); }
-    divider();
-
-    // ── AQ RESULT BANNER ──
-    heading("2. Aphasia Classification", 12, [6,182,212]);
-    checkPage(28);
-    doc.setFillColor(...typeRGB.map(v=>Math.min(255,v+200))); 
-    doc.setDrawColor(...typeRGB); doc.setLineWidth(0.5);
-    doc.roundedRect(20, y, pw, 22, 3, 3, "FD");
-    doc.setFontSize(18); doc.setTextColor(...typeRGB); doc.setFont("helvetica","bold");
-    doc.text(pr.type + " Aphasia", 26, y+9);
-    doc.setFontSize(11); doc.setTextColor(80,80,80); doc.setFont("helvetica","normal");
-    doc.text(`AQ: ${pr.aq} / 100  |  Severity: ${pr.sev}  |  Session: Pre-Intervention`, 26, y+17);
-    y += 28; doc.setLineWidth(0.2);
-
-    // Profile chips row
-    checkPage(12);
-    const chips = [
-      ["Fluency", pr.fl?"Fluent":"Non-Fluent", pr.fl?[16,185,129]:[239,68,68]],
-      ["Comprehension", pr.gc?"Good":"Poor", pr.gc?[16,185,129]:[239,68,68]],
-      ["Repetition", pr.gr?"Intact":"Impaired", pr.gr?[16,185,129]:[239,68,68]],
-      ["Naming", pr.gn?"Intact":"Impaired", pr.gn?[16,185,129]:[239,68,68]],
-    ];
-    let cx = 20;
-    chips.forEach(([l,v,c]) => {
-      doc.setFillColor(...c.map(n=>Math.min(255,n+190)));
-      doc.setDrawColor(...c); doc.roundedRect(cx, y, 38, 8, 2, 2, "FD");
-      doc.setFontSize(7.5); doc.setTextColor(...c); doc.setFont("helvetica","bold");
-      doc.text(`${l}: ${v}`, cx+2, y+5.5);
-      cx += 41;
-    });
-    y += 14;
-    divider();
-
-    // ── SUBTEST SCORES ──
-    heading("3. WAB Subtest Scores — Pre-Intervention", 12, [6,182,212]);
-    subheading("I. Spontaneous Speech  (Max: 20)");
-    scoreRow("Information Content", wabPre.ss_info, 10, 4);
-    scoreRow("Fluency / Phrase Length", wabPre.ss_flu, 10, 4);
-    scoreRow("SPONTANEOUS SPEECH TOTAL", pr.ss, 20, 0);
-    y += 2;
-    subheading("II. Auditory Verbal Comprehension  (Max: 200)");
-    scoreRow("Yes/No Questions", wabPre.avc_yesno, 60, 4);
-    scoreRow("Word Recognition", wabPre.avc_wordrec, 60, 4);
-    scoreRow("Sequential Commands", wabPre.avc_seqcmd, 80, 4);
-    scoreRow("AVC TOTAL", pr.avc, 200, 0);
-    y += 2;
-    subheading("III. Repetition  (Max: 100)");
-    scoreRow("REPETITION TOTAL", pr.rep, 100, 0);
-    y += 2;
-    checkPage(50); // ensure Naming section fits on one page
-    subheading("IV. Naming  (Max: 100)");
-    scoreRow("Object Naming", wabPre.nam_obj, 60, 4);
-    scoreRow("Word Fluency", wabPre.nam_flu, 20, 4);
-    scoreRow("Sentence Completion", wabPre.nam_sc, 10, 4);
-    scoreRow("Responsive Speech", wabPre.nam_rs, 10, 4);
-    scoreRow("NAMING TOTAL", pr.nam, 100, 0);
-    y += 4;
-    checkPage(16);
-    doc.setFillColor(6,16,31); doc.roundedRect(20, y, pw, 12, 2, 2, "F");
-    doc.setFontSize(12); doc.setTextColor(6,182,212); doc.setFont("helvetica","bold");
-    doc.text(`APHASIA QUOTIENT (AQ):  ${pr.aq} / 100  —  ${pr.type} Aphasia  (${pr.sev})`, 24, y+8);
-    y += 18;
-    divider();
-
-    // ── POST INTERVENTION (if filled) ──
-    if (hasPost) {
-      heading("4. WAB Subtest Scores — Post-Intervention", 12, [16,185,129]);
-      scoreRow("Spontaneous Speech", po.ss, 20);
-      scoreRow("AVC", po.avc, 200);
-      scoreRow("Repetition", po.rep, 100);
-      scoreRow("Naming", po.nam, 100);
-      checkPage(16);
-      doc.setFillColor(16,185,129); doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(11);
-      doc.roundedRect(20, y, pw, 10, 2, 2, "F");
-      const diff = Math.round((po.aq - pr.aq)*10)/10;
-      doc.text(`POST AQ: ${po.aq}/100  —  ${po.type}  (${po.sev})  |  Change from Pre: ${diff>0?"+":""}${diff} points`, 24, y+7);
-      y += 16;
-      divider();
+    function sectionHeader(title) {
+      guard(14);
+      doc.setFillColor(...NAVY);
+      doc.rect(ML, y, PW, 9, "F");
+      doc.setFontSize(10); doc.setTextColor(...WHITE); doc.setFont("helvetica","bold");
+      doc.text(`${secNum++}.  ${title.toUpperCase()}`, ML+4, y+6.2);
+      y += 13;
+    }
+    function subSection(title) {
+      guard(10);
+      doc.setDrawColor(...TEAL); doc.setLineWidth(0.4);
+      doc.line(ML, y, ML+3, y);
+      doc.setFontSize(9); doc.setTextColor(...TEAL); doc.setFont("helvetica","bold");
+      doc.text(title, ML+5, y+0.3);
+      const tw = doc.getTextWidth(title);
+      doc.setDrawColor(...MGREY); doc.setLineWidth(0.3);
+      doc.line(ML+6+tw, y, MR, y);
+      doc.setLineWidth(0.2);
+      y += 7;
+    }
+    function paraText(text, indent=0, size=9.5, color=DARK) {
+      guard(6);
+      doc.setFontSize(size); doc.setTextColor(...color); doc.setFont("helvetica","normal");
+      const lines = doc.splitTextToSize(String(text||"—"), PW - indent - 2);
+      lines.forEach(l => { guard(5); doc.text(l, ML+indent, y); y += size*0.42+1.3; });
+    }
+    function twoCol(label, value, valColor=DARK) {
+      guard(6);
+      doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(...DGREY);
+      doc.text(label, ML+2, y);
+      doc.setFont("helvetica","normal"); doc.setTextColor(...valColor);
+      doc.text(String(value||"—"), ML+58, y);
+      y += 5.8;
+    }
+    function hrule(color=MGREY, weight=0.25) {
+      guard(5);
+      doc.setDrawColor(...color); doc.setLineWidth(weight);
+      doc.line(ML, y, MR, y); y += 4;
     }
 
-    // ── WAB INTERPRETATION ──
-    heading(hasPost?"5. Clinical Interpretation":"4. Clinical Interpretation", 12, [139,92,246]);
-    const interp = {
-      "Global": "Global Aphasia is characterised by severe impairment across all language modalities. The patient shows significantly reduced fluency, poor auditory comprehension, impaired repetition and naming. Communication relies heavily on non-verbal strategies.",
-      "Broca's": "Broca's Aphasia presents with non-fluent, effortful speech with relatively preserved auditory comprehension. Repetition is typically impaired. The patient may show agrammatism and struggle with word retrieval.",
-      "Wernicke's": "Wernicke's Aphasia is characterised by fluent but paraphasic speech with poor auditory comprehension. The patient may be unaware of errors. Repetition and naming are typically impaired.",
-      "Conduction": "Conduction Aphasia presents with fluent speech and relatively preserved comprehension, but with significantly impaired repetition. The patient is typically aware of errors and makes multiple attempts to self-correct.",
-      "Transcortical Motor": "Transcortical Motor Aphasia presents with non-fluent spontaneous speech but with preserved repetition, which distinguishes it from Broca's Aphasia. Comprehension is relatively intact.",
-      "Transcortical Sensory": "Transcortical Sensory Aphasia is characterised by fluent speech with impaired comprehension but preserved repetition — the hallmark feature. The patient may echo back what is said.",
-      "Anomic": "Anomic Aphasia presents with fluent speech, good comprehension and intact repetition, but with significant word-finding difficulty across contexts. This is often seen in recovery from other aphasia types.",
-      "Mild / Recovered": "The WAB profile suggests mild or recovered aphasia. Language functions are largely preserved with occasional word-finding difficulty or mild comprehension issues in complex contexts.",
-      "Within Normal Limits": "WAB scores fall within normal limits. No significant language impairment detected at this assessment.",
-    };
-    body(interp[pr.type] || "Refer to WAB manual for detailed interpretation of this aphasia profile.", 0, 10);
+    // ── TABLE: score row with bar ──
+    function scoreTableRow(label, val, max, isTotal=false, indent=0) {
+      guard(7);
+      const pct = max>0?val/max:0;
+      const col = pct>=0.7?GREEN:pct>=0.4?AMBER:RED;
+      const rowH = 6.5;
+      // alternating row bg
+      if (isTotal) {
+        doc.setFillColor(235,245,255); doc.rect(ML, y-4.5, PW, rowH, "F");
+      }
+      doc.setFontSize(9);
+      doc.setFont("helvetica", isTotal?"bold":"normal");
+      doc.setTextColor(...(isTotal?NAVY:SLATE));
+      doc.text(label, ML+2+indent, y);
+      // Score
+      doc.setFont("helvetica","bold"); doc.setTextColor(...col);
+      doc.text(`${val} / ${max}`, 145, y);
+      // Percent
+      doc.setFont("helvetica","normal"); doc.setTextColor(...DGREY);
+      doc.text(`${Math.round(pct*100)}%`, 168, y);
+      // Bar track
+      const barX=130, barW=13, barY=y-3.2, barH=2.2;
+      doc.setFillColor(...MGREY); doc.rect(barX, barY, barW, barH, "F");
+      doc.setFillColor(...col); doc.rect(barX, barY, barW*pct, barH, "F");
+      y += rowH;
+    }
+
+    function tableHeader() {
+      guard(8);
+      doc.setFillColor(...MGREY);
+      doc.rect(ML, y-4, PW, 6, "F");
+      doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.setTextColor(...NAVY);
+      doc.text("Subtest", ML+2, y);
+      doc.text("Score", 145, y);
+      doc.text("%", 168, y);
+      doc.text("Profile", 130, y);
+      y += 4;
+      doc.setDrawColor(...NAVY); doc.setLineWidth(0.3);
+      doc.line(ML, y, MR, y); y += 3;
+    }
+
+    // ── LETTERHEAD ──
+    // Top colour bar
+    doc.setFillColor(...NAVY); doc.rect(0, 0, 210, 3, "F");
+    doc.setFillColor(...TEAL); doc.rect(0, 3, 210, 1.5, "F");
+
+    // Institution block (left)
+    y = 10;
+    doc.setFontSize(16); doc.setTextColor(...NAVY); doc.setFont("helvetica","bold");
+    doc.text("WESTERN APHASIA BATTERY", ML, y);
+    doc.setFontSize(8.5); doc.setTextColor(...TEAL); doc.setFont("helvetica","bold");
+    doc.text("CLINICAL ASSESSMENT REPORT", ML, y+5.5);
+    doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
+    doc.text("Bilingual Administration  ·  Kannada – English", ML, y+10);
+
+    // Report meta (right)
+    const reportDate = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"});
+    doc.setFontSize(8); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
+    doc.text(`Date of Report:`, 130, y, {align:"left"});
+    doc.setFont("helvetica","bold"); doc.setTextColor(...DARK);
+    doc.text(reportDate, 160, y);
+    doc.setFont("helvetica","normal"); doc.setTextColor(...DGREY);
+    doc.text(`Case No.:`, 130, y+5.5);
+    doc.setFont("helvetica","bold"); doc.setTextColor(...DARK);
+    doc.text(ch.caseNo||"___________", 160, y+5.5);
+    doc.setFont("helvetica","normal"); doc.setTextColor(...DGREY);
+    doc.text(`Session:`, 130, y+11);
+    doc.setFont("helvetica","bold"); doc.setTextColor(...DARK);
+    doc.text("Pre-Intervention", 160, y+11);
+
+    // Divider under letterhead
+    y = 26;
+    doc.setDrawColor(...NAVY); doc.setLineWidth(0.6);
+    doc.line(ML, y, MR, y);
+    doc.setDrawColor(...TEAL); doc.setLineWidth(0.3);
+    doc.line(ML, y+1, MR, y+1);
+    y = 32;
+
+    // ── SECTION 1: PATIENT DEMOGRAPHICS ──
+    sectionHeader("Patient Demographics");
+    // Two-column grid
+    const col1x=ML+2, col2x=ML+95;
+    const fields = [
+      ["Full Name", ch.name||"Not recorded"],
+      ["Age / Sex", `${ch.age||"—"} years  /  ${ch.sex}`],
+      ["Languages Spoken", ch.languagesSpoken||"—"],
+      ["Dominant Hand", ch.dominantHand||"—"],
+      ["Education", ch.education||"—"],
+      ["Pre-stroke Occupation", ch.occupationPreStroke||"—"],
+      ["Time Post Onset", ch.timePostOnset ? `${ch.timePostOnset} months` : "—"],
+      ["Lesion Site / Aetiology", ch.lesionSite||"—"],
+      ["WAB Language", lang==="en"?"English":"Kannada-English"],
+      ["Assessed by", ch.clinician||"—"],
+    ];
+    for (let i=0; i<fields.length; i+=2) {
+      guard(7);
+      const rowY = y;
+      if (i%4===0) { doc.setFillColor(...LGREY); doc.rect(ML, rowY-4, PW, 6.5, "F"); }
+      doc.setFontSize(8.5);
+      // col 1
+      doc.setFont("helvetica","bold"); doc.setTextColor(...DGREY);
+      doc.text(fields[i][0]+":", col1x, rowY);
+      doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+      const v1 = doc.splitTextToSize(String(fields[i][1]), 80);
+      doc.text(v1, col1x+42, rowY);
+      // col 2
+      if (fields[i+1]) {
+        doc.setFont("helvetica","bold"); doc.setTextColor(...DGREY);
+        doc.text(fields[i+1][0]+":", col2x, rowY);
+        doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+        const v2 = doc.splitTextToSize(String(fields[i+1][1]), 75);
+        doc.text(v2, col2x+42, rowY);
+      }
+      y += 7;
+    }
+    if (ch.clinicAddress) {
+      guard(7);
+      doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...DGREY);
+      doc.text("Institution:", col1x, y);
+      doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+      doc.text(doc.splitTextToSize(ch.clinicAddress, 140), col1x+42, y);
+      y += 7;
+    }
+    if (ch.strokeHistory) {
+      guard(14);
+      doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...DGREY);
+      doc.text("Stroke History:", col1x, y); y+=5;
+      paraText(ch.strokeHistory, 4, 9, SLATE);
+    }
     y += 3;
 
-    // ── AI SECTION (if available) ──
-    if (aiResult) {
-      divider();
-      heading(hasPost?"6. AI Clinical Analysis (Claude)":"5. AI Clinical Analysis (Claude)", 12, [16,185,129]);
-      subheading("Clinical Summary"); body(getDisplayNote("clinical_summary"), 2);
-      subheading("Lexical Retrieval & Agrammatism");
-      body(`Lexical Retrieval: ${aiResult.lexical_retrieval||"—"}`, 2);
-      body(`Agrammatism: ${aiResult.agrammatism?.present?"Present":"Absent"} — Severity: ${aiResult.agrammatism?.severity||"—"}`, 2);
-      if (aiResult.agrammatism?.features?.length) body(`Features: ${aiResult.agrammatism.features.join(", ")}`, 4);
-      if (aiResult.auditory_comprehension_profile) { subheading("AVC Pattern"); body(aiResult.auditory_comprehension_profile, 2); }
-      if (aiResult.paraphasias?.length) {
-        subheading("Paraphasia Inventory");
-        aiResult.paraphasias.forEach(p => body(`• [${p.type}]  ${p.example}  —  ${p.note}`, 4));
-      }
-      if (getDisplayNote("bilingual_notes")) { subheading("Bilingual / Code-Switching Notes"); body(getDisplayNote("bilingual_notes"), 2); }
-      if (aiResult.intervention_priorities?.length) {
-        subheading("Evidence-Based Intervention Priorities");
-        aiResult.intervention_priorities.forEach(item => {
-          body(`${item.priority}. [${item.domain}]  ${item.strategy}`, 4);
-          body(`Rationale: ${item.rationale}`, 8, 9);
-        });
-      }
-      if (getDisplayNote("home_programme")) { subheading("Home Programme for Family"); body(getDisplayNote("home_programme"), 2); }
-      if (getDisplayNote("prognosis")) { subheading("Prognosis"); body(getDisplayNote("prognosis"), 2); }
+    // ── SECTION 2: APHASIA CLASSIFICATION ──
+    sectionHeader("Aphasia Classification & AQ Summary");
+    guard(30);
+
+    // Large classification box
+    doc.setFillColor(...tcRGB.map(v=>Math.min(255,v+195)));
+    doc.setDrawColor(...tcRGB); doc.setLineWidth(0.8);
+    doc.roundedRect(ML, y, PW, 26, 3, 3, "FD");
+    // AQ circle placeholder
+    doc.setFillColor(...WHITE);
+    doc.circle(ML+16, y+13, 11, "FD");
+    doc.setFontSize(14); doc.setFont("helvetica","bold"); doc.setTextColor(...tcRGB);
+    doc.text(String(pr.aq), ML+16, y+11, {align:"center"});
+    doc.setFontSize(6.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","normal");
+    doc.text("/ 100 AQ", ML+16, y+16, {align:"center"});
+    // Type label
+    doc.setFontSize(16); doc.setFont("helvetica","bold"); doc.setTextColor(...tcRGB);
+    doc.text(`${pr.type} Aphasia`, ML+32, y+10);
+    // Severity + session
+    doc.setFontSize(9.5); doc.setFont("helvetica","normal"); doc.setTextColor(...SLATE);
+    doc.text(`Severity: `, ML+32, y+17);
+    doc.setFont("helvetica","bold");
+    const sevCol = pr.aq>=75?GREEN:pr.aq>=50?AMBER:RED;
+    doc.setTextColor(...sevCol);
+    doc.text(pr.sev, ML+32+doc.getTextWidth("Severity: "), y+17);
+    doc.setFont("helvetica","normal"); doc.setTextColor(...SLATE);
+    doc.text(`  ·  Pre-Intervention Assessment  ·  WAB (Kertesz, 1982)`, ML+32+doc.getTextWidth("Severity: "+pr.sev), y+17);
+    y += 30;
+
+    // Profile badges
+    guard(14);
+    const badges=[
+      ["Fluency", pr.fl?"Fluent":"Non-Fluent", pr.fl?GREEN:RED],
+      ["Comprehension", pr.gc?"Good":"Poor", pr.gc?GREEN:RED],
+      ["Repetition", pr.gr?"Intact":"Impaired", pr.gr?GREEN:RED],
+      ["Naming", pr.gn?"Intact":"Impaired", pr.gn?GREEN:RED],
+    ];
+    let bx=ML;
+    badges.forEach(([l,v,c])=>{
+      const bw=43;
+      doc.setFillColor(...c.map(n=>Math.min(255,n+195)));
+      doc.setDrawColor(...c); doc.setLineWidth(0.4);
+      doc.roundedRect(bx, y, bw, 10, 2, 2, "FD");
+      doc.setFontSize(7); doc.setFont("helvetica","bold"); doc.setTextColor(...c);
+      doc.text(l.toUpperCase(), bx+bw/2, y+4, {align:"center"});
+      doc.setFontSize(8.5); doc.setTextColor(...DARK);
+      doc.text(v, bx+bw/2, y+8.5, {align:"center"});
+      bx += bw+1.5;
+    });
+    y += 14;
+
+    hrule(MGREY);
+
+    // ── SECTION 3: WAB SUBTEST SCORES ──
+    sectionHeader("WAB Subtest Scores — Pre-Intervention");
+    tableHeader();
+
+    subSection("I.  Spontaneous Speech  (Maximum: 20)");
+    scoreTableRow("Information Content", wabPre.ss_info, 10, false, 4);
+    scoreTableRow("Fluency / Phrase Length", wabPre.ss_flu, 10, false, 4);
+    scoreTableRow("SPONTANEOUS SPEECH TOTAL", pr.ss, 20, true);
+    y += 2;
+
+    subSection("II.  Auditory Verbal Comprehension  (Maximum: 200)");
+    scoreTableRow("Yes / No Questions", wabPre.avc_yesno, 60, false, 4);
+    scoreTableRow("Word Recognition", wabPre.avc_wordrec, 60, false, 4);
+    scoreTableRow("Sequential Commands", wabPre.avc_seqcmd, 80, false, 4);
+    scoreTableRow("AVC TOTAL", pr.avc, 200, true);
+    y += 2;
+
+    subSection("III.  Repetition  (Maximum: 100)");
+    scoreTableRow("REPETITION TOTAL", pr.rep, 100, true);
+    y += 2;
+
+    guard(55);
+    subSection("IV.  Naming  (Maximum: 100)");
+    scoreTableRow("Object Naming", wabPre.nam_obj, 60, false, 4);
+    scoreTableRow("Word Fluency", wabPre.nam_flu, 20, false, 4);
+    scoreTableRow("Sentence Completion", wabPre.nam_sc, 10, false, 4);
+    scoreTableRow("Responsive Speech", wabPre.nam_rs, 10, false, 4);
+    scoreTableRow("NAMING TOTAL", pr.nam, 100, true);
+    y += 4;
+
+    // AQ Summary bar
+    guard(14);
+    doc.setFillColor(...NAVY); doc.rect(ML, y, PW, 11, "F");
+    doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
+    doc.text("APHASIA QUOTIENT (AQ):", ML+4, y+7.5);
+    doc.setTextColor(...tcRGB);
+    doc.text(`${pr.aq} / 100`, ML+68, y+7.5);
+    doc.setTextColor(200,200,200);
+    doc.text("—", ML+84, y+7.5);
+    doc.setTextColor(...WHITE);
+    doc.text(`${pr.type} Aphasia  (${pr.sev})`, ML+89, y+7.5);
+    y += 15;
+    hrule(NAVY, 0.4);
+
+    // ── SECTION 4: POST-INTERVENTION (if available) ──
+    if (hasPost) {
+      sectionHeader("WAB Subtest Scores — Post-Intervention");
+      tableHeader();
+      scoreTableRow("Spontaneous Speech", po.ss, 20, true);
+      scoreTableRow("Auditory Verbal Comprehension", po.avc, 200, true);
+      scoreTableRow("Repetition", po.rep, 100, true);
+      scoreTableRow("Naming", po.nam, 100, true);
+      y += 4;
+      const diff = Math.round((po.aq-pr.aq)*10)/10;
+      const dcol = diff>0?GREEN:diff<0?RED:DGREY;
+      guard(12);
+      doc.setFillColor(240,255,245); doc.setDrawColor(...GREEN); doc.setLineWidth(0.4);
+      doc.roundedRect(ML, y, PW, 10, 2, 2, "FD");
+      doc.setFontSize(10); doc.setFont("helvetica","bold"); doc.setTextColor(...NAVY);
+      doc.text(`POST AQ: ${po.aq} / 100  ·  ${po.type} Aphasia  (${po.sev})`, ML+4, y+4.5);
+      doc.setTextColor(...dcol);
+      doc.text(`  ·  Change: ${diff>0?"+":""}${diff} points`, ML+4+doc.getTextWidth(`POST AQ: ${po.aq} / 100  ·  ${po.type} Aphasia  (${po.sev})`), y+4.5);
+      y += 14; hrule(MGREY);
     }
 
-    // ── FOOTER ──
+    // ── SECTION 5: CLINICAL INTERPRETATION ──
+    sectionHeader("Clinical Interpretation");
+    const interp = {
+      "Global":"Global Aphasia is characterised by severe impairment across all language modalities — fluency, comprehension, repetition, and naming are all significantly reduced. The patient is largely dependent on non-verbal communication strategies such as gesture, pointing, and facial expression. Intensive, multimodal therapy approaches are indicated.",
+      "Broca's":"Broca's Aphasia presents with non-fluent, effortful, telegraphic speech output with relatively better preserved auditory comprehension. Repetition is typically impaired. The patient is often aware of their errors, which may cause frustration. Agrammatism and anomia are common features. Treatment focuses on functional communication and sentence production.",
+      "Wernicke's":"Wernicke's Aphasia is characterised by fluent, paraphasic speech with significantly impaired auditory comprehension. The patient may produce jargon and is typically unaware of errors (anosognosia). Repetition and naming are impaired. Therapy prioritises auditory comprehension training and reducing paraphasic output.",
+      "Conduction":"Conduction Aphasia presents with fluent speech and relatively preserved comprehension, but with disproportionately impaired repetition. The hallmark feature is conduite d'approche — repeated attempts to self-correct phonemic errors. Therapy focuses on repetition tasks and phonological cueing hierarchies.",
+      "Transcortical Motor":"Transcortical Motor Aphasia is distinguished from Broca's Aphasia by its preserved repetition ability. Spontaneous speech is non-fluent and initiating utterances is effortful, while comprehension remains relatively intact. Therapy targets initiation and spontaneous speech generation.",
+      "Transcortical Sensory":"Transcortical Sensory Aphasia is characterised by fluent speech with significantly impaired comprehension, but with notably preserved repetition — the hallmark feature. The patient may demonstrate echolalia. Therapy focuses on building semantic associations and improving comprehension.",
+      "Anomic":"Anomic Aphasia presents with fluent speech, good comprehension, and intact repetition, but with pronounced word-finding difficulty across all contexts. This is often seen as a residual pattern following recovery from other aphasia types. Treatment focuses on lexical retrieval strategies and cueing hierarchies.",
+      "Mild / Recovered":"The WAB profile is consistent with mild or recovered aphasia. Language functions are substantially preserved with residual word-finding difficulty or mild comprehension breakdown in linguistically complex contexts. Therapy and compensatory strategy training remain beneficial.",
+      "Within Normal Limits":"WAB scores fall within normal limits. No significant acquired language impairment is detected at this assessment. Clinical correlation with the presenting complaint and case history is recommended.",
+    };
+    guard(20);
+    doc.setFillColor(...LGREY); doc.setDrawColor(...MGREY); doc.setLineWidth(0.3);
+    const interpText = interp[pr.type]||"Refer to WAB standardisation manual for interpretation of this aphasia profile.";
+    const interpLines = doc.splitTextToSize(interpText, PW-8);
+    const interpH = interpLines.length * 5 + 8;
+    doc.roundedRect(ML, y, PW, interpH, 2, 2, "FD");
+    doc.setFontSize(9.5); doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+    interpLines.forEach((l,idx)=>{ doc.text(l, ML+4, y+6+idx*5); });
+    y += interpH + 6;
+
+    // ── SECTION 6: AI CLINICAL ANALYSIS ──
+    if (aiResult) {
+      sectionHeader("AI-Assisted Clinical Analysis  (Anthropic Claude)");
+      doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","italic");
+      doc.text("AI-generated content. For clinical decision support only. Verify all recommendations with qualified SLP judgement.", ML+2, y-6);
+
+      subSection("Clinical Summary");
+      paraText(getDisplayNote("clinical_summary"), 2);
+      y += 2;
+
+      subSection("Linguistic Profile");
+      guard(20);
+      // Two mini boxes side by side
+      doc.setFillColor(...LGREY); doc.roundedRect(ML, y, 85, 18, 2, 2, "F");
+      doc.setFillColor(...LGREY); doc.roundedRect(ML+90, y, 85, 18, 2, 2, "F");
+      doc.setFontSize(7.5); doc.setFont("helvetica","bold"); doc.setTextColor(...NAVY);
+      doc.text("LEXICAL RETRIEVAL", ML+4, y+5);
+      doc.setFont("helvetica","normal"); doc.setTextColor(...DARK); doc.setFontSize(10);
+      doc.text(aiResult.lexical_retrieval||"—", ML+4, y+13);
+      doc.setFontSize(7.5); doc.setFont("helvetica","bold"); doc.setTextColor(...NAVY);
+      doc.text("AGRAMMATISM", ML+94, y+5);
+      doc.setFont("helvetica","normal"); doc.setTextColor(...DARK); doc.setFontSize(10);
+      const agrText = `${aiResult.agrammatism?.present?"Present":"Absent"}  ·  ${aiResult.agrammatism?.severity||"—"}`;
+      doc.text(agrText, ML+94, y+13);
+      y += 22;
+      if (aiResult.agrammatism?.features?.length) {
+        paraText(`Features: ${aiResult.agrammatism.features.join("  ·  ")}`, 2, 9, SLATE);
+      }
+      if (aiResult.auditory_comprehension_profile) {
+        paraText(`AVC Pattern: ${aiResult.auditory_comprehension_profile}`, 2, 9, SLATE);
+      }
+      y += 2;
+
+      if (aiResult.paraphasias?.length) {
+        subSection("Paraphasia Inventory");
+        aiResult.paraphasias.forEach(p=>{
+          guard(8);
+          doc.setFillColor(255,245,245); doc.roundedRect(ML+2, y-3.5, PW-4, 7, 1, 1, "F");
+          doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...RED);
+          doc.text(`[${p.type}]`, ML+5, y);
+          doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+          doc.text(`${p.example}`, ML+25, y);
+          doc.setTextColor(...DGREY);
+          const noteLines = doc.splitTextToSize(p.note||"", PW-70);
+          doc.text(noteLines, ML+80, y);
+          y += 7;
+        });
+        y += 2;
+      }
+
+      if (getDisplayNote("bilingual_notes")) {
+        subSection("Bilingual & Code-Switching Observations");
+        paraText(getDisplayNote("bilingual_notes"), 2);
+        y += 2;
+      }
+
+      if (aiResult.intervention_priorities?.length) {
+        subSection("Evidence-Based Intervention Priorities");
+        aiResult.intervention_priorities.forEach((item,idx)=>{
+          guard(18);
+          const icolors=[[0,128,128],[59,130,246],[139,92,246]];
+          const ic=icolors[idx]||NAVY;
+          doc.setFillColor(...ic.map(v=>Math.min(255,v+205)));
+          doc.setDrawColor(...ic); doc.setLineWidth(0.3);
+          doc.roundedRect(ML+2, y, PW-4, 14, 2, 2, "FD");
+          doc.setFillColor(...ic); doc.circle(ML+8, y+7, 4, "F");
+          doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
+          doc.text(String(item.priority), ML+8, y+8.2, {align:"center"});
+          doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...ic);
+          doc.text(item.domain, ML+15, y+5);
+          doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+          const stratLines = doc.splitTextToSize(item.strategy||"", PW-25);
+          doc.text(stratLines, ML+15, y+10);
+          y += 16;
+          if (item.rationale) { paraText(`Rationale: ${item.rationale}`, 6, 8.5, DGREY); }
+          y += 2;
+        });
+      }
+
+      if (getDisplayNote("home_programme")) {
+        subSection("Home Programme for Family / Caregivers");
+        guard(16);
+        doc.setFillColor(240,255,245); doc.setDrawColor(...GREEN); doc.setLineWidth(0.3);
+        const hpLines = doc.splitTextToSize(getDisplayNote("home_programme"), PW-8);
+        doc.roundedRect(ML, y, PW, hpLines.length*5+8, 2, 2, "FD");
+        doc.setFontSize(9.5); doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+        hpLines.forEach((l,i)=>doc.text(l, ML+4, y+6+i*5));
+        y += hpLines.length*5+12;
+      }
+
+      if (getDisplayNote("prognosis")) {
+        subSection("Prognosis");
+        paraText(getDisplayNote("prognosis"), 2);
+        y += 2;
+      }
+    }
+
+    // ── SIGNATURE BLOCK ──
+    guard(35);
+    hrule(NAVY, 0.4);
+    y += 2;
+    doc.setFontSize(8.5); doc.setFont("helvetica","bold"); doc.setTextColor(...NAVY);
+    doc.text("ASSESSED BY", ML, y);
+    doc.text("SIGNATURE", ML+95, y);
+    y += 5;
+    doc.setFont("helvetica","normal"); doc.setTextColor(...DARK);
+    doc.text(ch.clinician||"________________________________", ML, y);
+    doc.text("________________________________", ML+95, y);
+    y += 5;
+    if (ch.supervisor) {
+      doc.setTextColor(...DGREY); doc.setFontSize(8);
+      doc.text(`Supervisor: ${ch.supervisor}`, ML, y);
+      y += 5;
+    }
+    if (ch.clinicAddress) {
+      doc.setTextColor(...DGREY); doc.setFontSize(8);
+      const addrLines = doc.splitTextToSize(ch.clinicAddress, 140);
+      doc.text(addrLines, ML, y);
+      y += addrLines.length * 4.5 + 2;
+    }
+    y += 4;
+    doc.setFontSize(7.5); doc.setTextColor(...DGREY); doc.setFont("helvetica","italic");
+    doc.text("This report is generated using AphasiaLens v2.0, a bilingual clinical tool based on the Western Aphasia Battery (Kertesz, 1982).", ML, y);
+    doc.text("AI clinical analysis is provided by Anthropic Claude and is intended as a decision-support aid only. Clinical judgement of a qualified SLP takes precedence.", ML, y+4.5);
+
+    // ── PAGE FOOTER (all pages) ──
     const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
+    for (let i=1; i<=pageCount; i++) {
       doc.setPage(i);
-      // Footer background
-      doc.setFillColor(245,245,245); doc.rect(0,282,210,15,"F");
-      doc.setDrawColor(200,200,200); doc.line(0,282,210,282);
-      doc.setFontSize(7); doc.setTextColor(90,90,90); doc.setFont("helvetica","normal");
-      // Left: clinician details
-      const assessedBy = ch.clinician
-        ? `Assessed by: ${ch.clinician}${ch.supervisor ? "   Supervisor: "+ch.supervisor : ""}`
-        : "Assessed by: ___________________________";
-      const address = ch.clinicAddress
-        ? ch.clinicAddress
-        : "Institution: ___________________________";
-      doc.text(assessedBy, 8, 288);
-      doc.text(address, 8, 294);
-      // Right: tool info + page
-      doc.setFont("helvetica","italic"); doc.setTextColor(140,140,140);
-      const pageText = `AphasiaLens v2.0   |   Page ${i} of ${pageCount}`;
-      doc.text(pageText, 202, 288, { align: "right" });
-      doc.text("For clinical use under qualified SLP supervision only", 202, 294, { align: "right" });
+      doc.setFillColor(...NAVY); doc.rect(0, 288, 210, 9, "F");
+      doc.setFillColor(...TEAL); doc.rect(0, 297, 210, 0.8, "F");
+      doc.setFontSize(7); doc.setFont("helvetica","normal"); doc.setTextColor(180,200,220);
+      doc.text("AphasiaLens v2.0  ·  Western Aphasia Battery Clinical Report  ·  For qualified SLP use only", ML, 293.5);
+      doc.setTextColor(100,160,200);
+      doc.text(`Page ${i} of ${pageCount}`, MR, 293.5, {align:"right"});
     }
 
     const name = ch.name ? ch.name.replace(/\s+/g,"_") : "Patient";
-    doc.save(`AphasiaLens_WAB_Report_${name}_${new Date().toISOString().slice(0,10)}.pdf`);
+    doc.save(`WAB_Report_${name}_${new Date().toISOString().slice(0,10)}.pdf`);
   }
 
   // ── Sarvam STT State ──
