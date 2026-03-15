@@ -1782,8 +1782,6 @@ Perform complete multi-level linguistic analysis.`
         <div style={{maxWidth:980,margin:"0 auto",padding:"24px 32px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:24}}>
           <div style={{maxWidth:320}}>
             <div style={{fontSize:11,color:C.teal,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>AphasiaLens v2.0</div>
-            <div style={{fontSize:13,color:C.text,fontWeight:700,...fnt,marginBottom:4}}>Mr. Hemaraja Nayaka S.</div>
-            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:6}}>Yenepoya Medical College Hospital</div>
             <div style={{fontSize:11.5,color:C.muted,...fnt,lineHeight:1.7}}>
               A free bilingual (Kannada–English) WAB-based aphasia assessment and AI-assisted clinical analysis tool for Speech-Language Pathologists.
             </div>
