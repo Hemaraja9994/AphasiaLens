@@ -1805,8 +1805,6 @@ Perform complete multi-level linguistic analysis.`
         <div style={{borderTop:`1px solid ${C.border}`,padding:"10px 32px",display:"flex",justifyContent:"center",alignItems:"center",gap:6,background:"#f8fafc"}}>
           <span style={{fontSize:11.5,color:C.muted,...fnt}}>Designed &amp; developed by</span>
           <span style={{fontSize:11.5,color:C.teal,fontWeight:700,...fnt}}>Mr. Hemaraja Nayaka S.</span>
-          <span style={{fontSize:11.5,color:C.muted,...fnt}}>·</span>
-          <span style={{fontSize:11.5,color:C.muted,...fnt}}>Yenepoya Medical College Hospital</span>
           <span style={{fontSize:11.5,color:C.muted,...fnt}}>· © {new Date().getFullYear()}</span>
         </div>
       </div>
