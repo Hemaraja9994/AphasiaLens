@@ -3,10 +3,10 @@ import { jsPDF } from "jspdf";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg:"#06101f", surface:"#0c1829", card:"#101e30", border:"#1a3356",
-  teal:"#06b6d4", tealDim:"#0a2e3e", accent:"#f59e0b", green:"#10b981",
-  red:"#ef4444", purple:"#8b5cf6", blue:"#3b82f6", pink:"#ec4899",
-  text:"#e2e8f0", muted:"#64748b", white:"#f1f5f9",
+  bg:"#f0f4f8", surface:"#ffffff", card:"#ffffff", border:"#d1dce8",
+  teal:"#0284c7", tealDim:"#dbeafe", accent:"#d97706", green:"#059669",
+  red:"#dc2626", purple:"#7c3aed", blue:"#2563eb", pink:"#db2777",
+  text:"#1e293b", muted:"#64748b", white:"#ffffff",
 };
 
 // ─── Bilingual WAB Data ───────────────────────────────────────────────────────
@@ -80,8 +80,8 @@ const fnt = { fontFamily:"'Segoe UI', system-ui, sans-serif" };
 
 function Card({title, icon, accent=C.teal, children, noPad}) {
   return (
-    <div style={{background:C.card,border:`1px solid ${accent}33`,borderRadius:12,marginBottom:16,overflow:"hidden"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 18px",borderBottom:`1px solid ${accent}22`,background:`${accent}08`}}>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",borderTop:`3px solid ${accent}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:"#fafcff"}}>
         <span style={{color:accent,fontSize:14}}>{icon}</span>
         <h3 style={{margin:0,fontSize:11,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:accent,...fnt}}>{title}</h3>
       </div>
@@ -92,7 +92,7 @@ function Card({title, icon, accent=C.teal, children, noPad}) {
 
 function Row({label, value, color}) {
   return (
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:`1px solid ${C.border}33`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:`1px solid #edf2f7`}}>
       <span style={{fontSize:12,color:C.muted,...fnt}}>{label}</span>
       <span style={{fontSize:12,color:color||C.text,fontWeight:700,...fnt}}>{value}</span>
     </div>
@@ -193,11 +193,11 @@ function AQGauge({aq}) {
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <svg width={124} height={124}>
-        <circle cx={62} cy={62} r={r} fill="none" stroke={C.border} strokeWidth={9}/>
+        <circle cx={62} cy={62} r={r} fill="none" stroke="#e2e8f0" strokeWidth={9}/>
         <circle cx={62} cy={62} r={r} fill="none" stroke={col} strokeWidth={9}
           strokeDasharray={`${pct*circ} ${circ}`} strokeLinecap="round"
           transform="rotate(-90 62 62)" style={{transition:"stroke-dasharray 0.8s"}}/>
-        <text x={62} y={57} textAnchor="middle" fill={C.white} fontSize={22} fontWeight="800" fontFamily="sans-serif">{aq}</text>
+        <text x={62} y={57} textAnchor="middle" fill={C.text} fontSize={22} fontWeight="800" fontFamily="sans-serif">{aq}</text>
         <text x={62} y={73} textAnchor="middle" fill={C.muted} fontSize={10} fontFamily="sans-serif">/ 100 AQ</text>
       </svg>
     </div>
@@ -213,9 +213,10 @@ function NavBtn({label, active, onClick}) {
     <button onClick={onClick} style={{
       padding:"9px 14px",border:"1px solid",borderRadius:7,cursor:"pointer",
       borderColor:active?C.teal:C.border,
-      background:active?C.tealDim:C.surface,
-      color:active?C.teal:C.muted,
-      fontSize:11,fontWeight:700,...fnt,whiteSpace:"nowrap",transition:"all 0.15s"
+      background:active?C.teal:"#ffffff",
+      color:active?"#ffffff":C.muted,
+      fontSize:11,fontWeight:700,...fnt,whiteSpace:"nowrap",transition:"all 0.15s",
+      boxShadow:active?"0 2px 8px rgba(2,132,199,0.25)":"0 1px 2px rgba(0,0,0,0.04)"
     }}>{label}</button>
   );
 }
@@ -1000,27 +1001,27 @@ Perform complete multi-level linguistic analysis.`
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,...fnt,paddingBottom:60}}>
       {/* Header */}
-      <div style={{background:`linear-gradient(135deg,#081526 0%,#06101f 100%)`,borderBottom:`1px solid ${C.border}`,padding:"20px 28px 16px"}}>
+      <div style={{background:"#ffffff",borderBottom:`1px solid ${C.border}`,padding:"20px 28px 16px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)",borderTop:`4px solid ${C.teal}`}}>
         <div style={{maxWidth:960,margin:"0 auto"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{width:38,height:38,borderRadius:9,background:C.tealDim,border:`1.5px solid ${C.teal}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⬡</div>
+              <div style={{width:40,height:40,borderRadius:10,background:`linear-gradient(135deg,${C.teal},#0ea5e9)`,border:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,boxShadow:"0 4px 12px rgba(2,132,199,0.3)"}}>⬡</div>
               <div>
-                <h1 style={{margin:0,fontSize:20,fontWeight:800,color:C.white,letterSpacing:"-0.02em"}}>Aphasia<span style={{color:C.teal}}>Lens</span></h1>
-                <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase"}}>Bilingual Clinical Assessment Tool · Kannada–English</div>
+                <h1 style={{margin:0,fontSize:22,fontWeight:800,color:C.text,letterSpacing:"-0.02em"}}>Aphasia<span style={{color:C.teal}}>Lens</span></h1>
+                <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>Bilingual Clinical Assessment Tool · Kannada–English</div>
               </div>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
               {/* Language Toggle */}
-              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden"}}>
+              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
                 {[["en","English"],["kn","ಕನ್ನಡ"]].map(([v,l])=>(
-                  <button key={v} onClick={()=>setLang(v)} style={{padding:"5px 12px",border:"none",background:lang===v?C.tealDim:"transparent",color:lang===v?C.teal:C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{l}</button>
+                  <button key={v} onClick={()=>setLang(v)} style={{padding:"6px 14px",border:"none",background:lang===v?C.teal:"#f8fafc",color:lang===v?"#ffffff":C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
                 ))}
               </div>
               {/* Session Toggle */}
-              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden"}}>
+              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
                 {[["pre","Pre-Rx"],["post","Post-Rx"]].map(([v,l])=>(
-                  <button key={v} onClick={()=>setSession(v)} style={{padding:"5px 12px",border:"none",background:session===v?(v==="pre"?C.tealDim:C.green+"22"):"transparent",color:session===v?(v==="pre"?C.teal:C.green):C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{l}</button>
+                  <button key={v} onClick={()=>setSession(v)} style={{padding:"6px 14px",border:"none",background:session===v?(v==="pre"?C.teal:C.green):"#f8fafc",color:session===v?"#ffffff":C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
                 ))}
               </div>
             </div>
@@ -1069,7 +1070,7 @@ Perform complete multi-level linguistic analysis.`
               <FTextarea label="Investigations, Reports, Rx & Advice" value={ch.medicalRecords} onChange={v=>setCh(p=>({...p,medicalRecords:v}))} rows={4} placeholder="CT/MRI findings, medications, physician advice, referrals..."/>
             </Card>
 
-            <button onClick={()=>setPage("behaviour")} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,#0284c7,#06b6d4)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #06b6d433",...fnt}}>
+            <button onClick={()=>setPage("behaviour")} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #06b6d433",...fnt}}>
               Next: Behaviour & General Assessment →
             </button>
           </div>
@@ -1104,8 +1105,8 @@ Perform complete multi-level linguistic analysis.`
             </Card>
 
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setPage("casehistory")} style={{flex:1,padding:"11px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt}}>← Back</button>
-              <button onClick={()=>setPage("specfn")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0284c7,#06b6d4)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: Specific Functions →</button>
+              <button onClick={()=>setPage("casehistory")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
+              <button onClick={()=>setPage("specfn")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: Specific Functions →</button>
             </div>
           </div>
         )}
@@ -1185,8 +1186,8 @@ Perform complete multi-level linguistic analysis.`
             </Card>
 
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setPage("behaviour")} style={{flex:1,padding:"11px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt}}>← Back</button>
-              <button onClick={()=>setPage("wab")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0284c7,#06b6d4)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: WAB Administration ({lang==="en"?"English":"Kannada"}) →</button>
+              <button onClick={()=>setPage("behaviour")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
+              <button onClick={()=>setPage("wab")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: WAB Administration ({lang==="en"?"English":"Kannada"}) →</button>
             </div>
           </div>
         )}
@@ -1194,7 +1195,7 @@ Perform complete multi-level linguistic analysis.`
         {/* ── PAGE 4: WAB ── */}
         {page==="wab" && (
           <div>
-            <div style={{background:C.card,border:`1px solid ${C.teal}44`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
+            <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderLeft:`4px solid ${C.teal}`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{fontSize:13,color:C.text,fontWeight:700,...fnt}}>
                 Administering WAB in: <span style={{color:C.teal}}>{lang==="en"?"English":"Kannada–English Bilingual"}</span>
               </div>
@@ -1203,7 +1204,7 @@ Perform complete multi-level linguistic analysis.`
 
             {/* I. Spontaneous Speech */}
             <Card title="I. Spontaneous Speech (Max: 20)" icon="💬" accent={C.teal}>
-              <div style={{background:C.surface,borderRadius:8,padding:12,marginBottom:14,maxHeight:220,overflowY:"auto"}}>
+              <div style={{background:"#f8fafc",borderRadius:8,padding:12,marginBottom:14,maxHeight:220,overflowY:"auto",border:`1px solid ${C.border}`}}>
                 {WAB[lang].spontaneous.map((q,i)=>(
                   <div key={i} style={{padding:"7px 0",borderBottom:i<WAB[lang].spontaneous.length-1?`1px solid ${C.border}33`:"none"}}>
                     <div style={{fontSize:12,color:C.text,...fnt}}><b>{i+1}.</b> {q}</div>
@@ -1223,14 +1224,14 @@ Perform complete multi-level linguistic analysis.`
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
                 <div>
                   <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>A. Yes/No Questions (Max 60)</div>
-                  <div style={{background:C.surface,borderRadius:7,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
+                  <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
                     {WAB[lang].yesno.map((q,i)=><div key={i} style={{fontSize:11,color:C.muted,padding:"3px 0",borderBottom:`1px solid ${C.border}22`,...fnt}}>{i+1}. {q}</div>)}
                   </div>
                   <SliderScore label="Score" value={wab.avc_yesno} max={60} onChange={v=>updateWab("avc_yesno",v)}/>
                 </div>
                 <div>
                   <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>B. Word Recognition (Max 60)</div>
-                  <div style={{background:C.surface,borderRadius:7,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt,lineHeight:1.9}}>
+                  <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt,lineHeight:1.9}}>
                     Real objects · Drawn objects · Forms · Letters · Numbers · Colors · Furniture · Body parts · Fingers · Right-Left
                     <div style={{marginTop:6,color:C.text,fontStyle:"italic"}}>Score 1 pt per correct identification</div>
                   </div>
@@ -1238,7 +1239,7 @@ Perform complete multi-level linguistic analysis.`
                 </div>
                 <div>
                   <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>C. Sequential Commands (Max 80)</div>
-                  <div style={{background:C.surface,borderRadius:7,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
+                  <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
                     {WAB[lang].commands.map((c,i)=>(
                       <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.border}22`}}>
                         <span style={{fontSize:11,color:C.muted,...fnt,flex:1}}>{i+1}. {c.c}</span>
@@ -1254,7 +1255,7 @@ Perform complete multi-level linguistic analysis.`
 
             {/* III. Repetition */}
             <Card title="III. Repetition (Max: 100)" icon="🔁" accent={C.blue}>
-              <div style={{background:C.surface,borderRadius:8,padding:12,marginBottom:14}}>
+              <div style={{background:"#f8fafc",border:`1px solid ${C.border}`,borderRadius:8,padding:12,marginBottom:14}}>
                 {WAB[lang].repetition.map((item,i)=>(
                   <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<WAB[lang].repetition.length-1?`1px solid ${C.border}33`:"none"}}>
                     <span style={{fontSize:12,color:C.text,...fnt}}>{i+1}. {item.t}</span>
@@ -1270,14 +1271,14 @@ Perform complete multi-level linguistic analysis.`
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                 <div>
                   <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>A. Object Naming (Max 60)</div>
-                  <div style={{background:C.surface,borderRadius:7,padding:10,maxHeight:160,overflowY:"auto",marginBottom:8}}>
+                  <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:160,overflowY:"auto",marginBottom:8}}>
                     {WAB[lang].naming_obj.map((o,i)=><div key={i} style={{fontSize:11,color:C.muted,padding:"3px 0",borderBottom:`1px solid ${C.border}22`,...fnt}}>{i+1}. {o}</div>)}
                   </div>
                   <SliderScore label="Object Naming" value={wab.nam_obj} max={60} onChange={v=>updateWab("nam_obj",v)}/>
                 </div>
                 <div>
                   <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>B. Word Fluency (Max 20)</div>
-                  <div style={{background:C.surface,borderRadius:7,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt}}>Name as many animals as possible in 1 minute. 1 pt per unique animal (max 20)</div>
+                  <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt}}>Name as many animals as possible in 1 minute. 1 pt per unique animal (max 20)</div>
                   <SliderScore label="Word Fluency" value={wab.nam_flu} max={20} onChange={v=>updateWab("nam_flu",v)}/>
                   <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6,marginTop:10}}>C. Sentence Completion (Max 10)</div>
                   {WAB[lang].sentence_completion.map((s,i)=><div key={i} style={{fontSize:11,color:C.muted,...fnt,padding:"2px 0"}}>{i+1}. {s}</div>)}
@@ -1291,8 +1292,8 @@ Perform complete multi-level linguistic analysis.`
             </Card>
 
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setPage("specfn")} style={{flex:1,padding:"11px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt}}>← Back</button>
-              <button onClick={()=>setPage("results")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0284c7,#06b6d4)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Calculate AQ & Results →</button>
+              <button onClick={()=>setPage("specfn")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
+              <button onClick={()=>setPage("results")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Calculate AQ & Results →</button>
             </div>
           </div>
         )}
@@ -1301,7 +1302,7 @@ Perform complete multi-level linguistic analysis.`
         {page==="results" && (
           <div>
             {/* AQ Banner */}
-            <div style={{background:`linear-gradient(135deg,${typeCol}14,${typeCol}06)`,border:`1px solid ${typeCol}44`,borderRadius:14,padding:"20px 24px",marginBottom:18,display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
+            <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderLeft:`5px solid ${typeCol}`,borderRadius:14,padding:"20px 24px",marginBottom:18,display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
               <AQGauge aq={curResult.aq}/>
               <div style={{flex:1,minWidth:200}}>
                 <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>
@@ -1385,7 +1386,7 @@ Perform complete multi-level linguistic analysis.`
 
             <button onClick={runAnalysis} disabled={aiLoading} style={{
               width:"100%",padding:"14px",border:"none",borderRadius:9,color:C.white,fontSize:14,fontWeight:800,cursor:aiLoading?"not-allowed":"pointer",...fnt,
-              background:aiLoading?C.tealDim:`linear-gradient(135deg,#7c3aed,#06b6d4)`,
+              background:aiLoading?"#e2e8f0":`linear-gradient(135deg,#7c3aed,#0284c7)`,
               boxShadow:aiLoading?"none":"0 4px 24px #7c3aed44",transition:"all 0.2s"
             }}>
               {aiLoading?"⏳  Generating AI Clinical Analysis…":"⬡  Generate AI Clinical Analysis & Intervention Plan"}
@@ -1426,7 +1427,7 @@ Perform complete multi-level linguistic analysis.`
                       {aiResult.agrammatism?.features?.map((f,i)=><Chip key={i} text={f} color={C.purple}/>)}
                     </div>
                     {aiResult.auditory_comprehension_profile && (
-                      <div style={{marginTop:10,padding:"8px 10px",background:C.surface,borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>AVC pattern: {aiResult.auditory_comprehension_profile}</div>
+                      <div style={{marginTop:10,padding:"8px 10px",background:"#f0f7ff",borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>AVC pattern: {aiResult.auditory_comprehension_profile}</div>
                     )}
                   </Card>
 
@@ -1435,7 +1436,7 @@ Perform complete multi-level linguistic analysis.`
                     {(!aiResult.paraphasias||aiResult.paraphasias.length===0)?
                       <p style={{color:C.muted,fontSize:12,...fnt}}>No significant paraphasias identified in this profile.</p>:
                       aiResult.paraphasias.map((p,i)=>(
-                        <div key={i} style={{background:C.surface,borderRadius:7,padding:"10px 12px",marginBottom:8,border:`1px solid ${C.red}22`}}>
+                        <div key={i} style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:"10px 12px",marginBottom:8,border:`1px solid ${C.red}22`}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                             <Chip text={p.type} color={C.red}/>
                           </div>
@@ -1491,7 +1492,7 @@ Perform complete multi-level linguistic analysis.`
                   <Card title="Prognosis" icon="🔮" accent={C.purple}>
                     <textarea value={getNoteValue("prognosis")} onChange={e=>handleNoteChange("prognosis",e.target.value)} rows={4} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontSize:13,padding:"8px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",lineHeight:1.8,...fnt}}/>
                     <button onClick={()=>handleNoteSave("prognosis")} style={{marginTop:6,padding:"5px 18px",background:noteSaved["prognosis"]?C.green:C.purple,border:"none",borderRadius:6,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",...fnt}}>{noteSaved["prognosis"]?"✓ Saved":"💾 Save"}</button>
-                    <div style={{marginTop:8,padding:"8px 10px",background:C.surface,borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>
+                    <div style={{marginTop:8,padding:"8px 10px",background:"#f0f7ff",borderRadius:6,fontSize:11,color:C.muted,...fnt,fontStyle:"italic"}}>
                       ⚠ AI-generated. For clinical use only under supervision of a qualified SLP.
                     </div>
                   </Card>
@@ -1499,8 +1500,8 @@ Perform complete multi-level linguistic analysis.`
 
                 <div style={{display:"flex",gap:10,marginTop:4}}>
                   <button onClick={runAnalysis} disabled={aiLoading} style={{
-                    flex:1,padding:"11px",border:`1px solid ${C.tealDim}`,borderRadius:8,color:C.teal,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,
-                    background:C.tealDim,transition:"all 0.2s"
+                    flex:1,padding:"11px",border:`1px solid ${C.teal}`,borderRadius:8,color:C.teal,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,
+                    background:"#ffffff",transition:"all 0.2s",boxShadow:"0 1px 3px rgba(2,132,199,0.12)"
                   }}>
                     ↺ Re-run Analysis
                   </button>
@@ -1782,7 +1783,7 @@ Perform complete multi-level linguistic analysis.`
       </div>
 
       {/* ── Footer ── */}
-      <div style={{marginTop:48,borderTop:`1px solid ${C.border}`,background:C.surface}}>
+      <div style={{marginTop:48,borderTop:`1px solid ${C.border}`,background:"#ffffff",boxShadow:"0 -1px 4px rgba(0,0,0,0.04)"}}>
         <div style={{maxWidth:960,margin:"0 auto",padding:"20px 28px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:20}}>
           <div>
             <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>About This Tool</div>
