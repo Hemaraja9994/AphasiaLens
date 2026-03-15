@@ -1779,26 +1779,35 @@ Perform complete multi-level linguistic analysis.`
 
       {/* ── Footer ── */}
       <div style={{marginTop:48,borderTop:`1px solid ${C.border}`,background:"#ffffff",boxShadow:"0 -1px 4px rgba(0,0,0,0.04)"}}>
-        <div style={{maxWidth:960,margin:"0 auto",padding:"20px 28px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:20}}>
-          <div>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>About This Tool</div>
-            <div style={{fontSize:12,color:C.white,fontWeight:700,...fnt}}>AphasiaLens v2.0</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3,maxWidth:320,lineHeight:1.6}}>
-              A free bilingual (Kannada-English) WAB-based aphasia assessment and AI-assisted clinical analysis tool for Speech-Language Pathologists.
+        <div style={{maxWidth:980,margin:"0 auto",padding:"24px 32px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:24}}>
+          <div style={{maxWidth:320}}>
+            <div style={{fontSize:11,color:C.teal,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>AphasiaLens v2.0</div>
+            <div style={{fontSize:13,color:C.text,fontWeight:700,...fnt,marginBottom:4}}>Mr. Hemaraja Nayaka S.</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:6}}>Yenepoya Medical College Hospital</div>
+            <div style={{fontSize:11.5,color:C.muted,...fnt,lineHeight:1.7}}>
+              A free bilingual (Kannada–English) WAB-based aphasia assessment and AI-assisted clinical analysis tool for Speech-Language Pathologists.
             </div>
           </div>
           <div>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Powered By</div>
-            <div style={{fontSize:11,color:C.muted,...fnt}}>🤖 Claude (Anthropic) — AI Clinical Analysis</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3}}>🎙 Sarvam AI — Multilingual Speech Transcription</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3}}>⚖️ Western Aphasia Battery (WAB) — Kertesz, 1982</div>
+            <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,marginBottom:10}}>Powered By</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:5}}>🤖 Claude (Anthropic) — AI Clinical Analysis</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:5}}>🎙 Sarvam AI — Multilingual Speech Transcription</div>
+            <div style={{fontSize:12,color:C.muted,...fnt}}>⚖️ Western Aphasia Battery (WAB) — Kertesz, 1982</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Disclaimer</div>
-            <div style={{fontSize:10,color:C.muted,...fnt,marginTop:2,maxWidth:220,lineHeight:1.6,textAlign:"right"}}>
+            <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,marginBottom:10}}>Disclaimer</div>
+            <div style={{fontSize:11.5,color:C.muted,...fnt,maxWidth:220,lineHeight:1.7,textAlign:"right"}}>
               For clinical use under qualified SLP supervision only. AI outputs are decision-support aids and do not replace clinical judgement.
             </div>
           </div>
+        </div>
+        {/* Bottom credit bar */}
+        <div style={{borderTop:`1px solid ${C.border}`,padding:"10px 32px",display:"flex",justifyContent:"center",alignItems:"center",gap:6,background:"#f8fafc"}}>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>Designed &amp; developed by</span>
+          <span style={{fontSize:11.5,color:C.teal,fontWeight:700,...fnt}}>Mr. Hemaraja Nayaka S.</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>·</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>Yenepoya Medical College Hospital</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>· © {new Date().getFullYear()}</span>
         </div>
       </div>
     </div>
