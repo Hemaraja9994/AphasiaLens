@@ -3,10 +3,10 @@ import { jsPDF } from "jspdf";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg:"#f0f4f8", surface:"#ffffff", card:"#ffffff", border:"#d1dce8",
-  teal:"#0284c7", tealDim:"#dbeafe", accent:"#d97706", green:"#059669",
-  red:"#dc2626", purple:"#7c3aed", blue:"#2563eb", pink:"#db2777",
-  text:"#1e293b", muted:"#64748b", white:"#ffffff",
+  bg:"#f1f5f9", surface:"#ffffff", card:"#ffffff", border:"#e2e8f0",
+  teal:"#0369a1", tealDim:"#eff6ff", accent:"#b45309", green:"#047857",
+  red:"#b91c1c", purple:"#6d28d9", blue:"#1d4ed8", pink:"#be185d",
+  text:"#0f172a", muted:"#475569", white:"#ffffff",
 };
 
 // ─── Bilingual WAB Data ───────────────────────────────────────────────────────
@@ -76,61 +76,55 @@ const SYS = `You are a bilingual (Kannada-English) Speech-Language Pathologist s
 }`;
 
 // ─── Reusable UI ──────────────────────────────────────────────────────────────
-const fnt = { fontFamily:"'Segoe UI', system-ui, sans-serif" };
+const fnt = { fontFamily:"'Inter', 'Segoe UI', system-ui, sans-serif" };
 
 function Card({title, icon, accent=C.teal, children, noPad}) {
   return (
-    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",borderTop:`3px solid ${accent}`}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:"#fafcff"}}>
-        <span style={{color:accent,fontSize:14}}>{icon}</span>
-        <h3 style={{margin:0,fontSize:11,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:accent,...fnt}}>{title}</h3>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,marginBottom:20,overflow:"hidden",boxShadow:"0 1px 3px rgba(15,23,42,0.06), 0 4px 20px rgba(15,23,42,0.05)",borderTop:`3px solid ${accent}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:9,padding:"14px 20px",borderBottom:`1px solid ${C.border}`,background:"#f8faff"}}>
+        <span style={{color:accent,fontSize:15}}>{icon}</span>
+        <h3 style={{margin:0,fontSize:12,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:accent,...fnt}}>{title}</h3>
       </div>
-      <div style={noPad?{}:{padding:"16px 18px"}}>{children}</div>
+      <div style={noPad?{}:{padding:"18px 20px"}}>{children}</div>
     </div>
   );
 }
 
 function Row({label, value, color}) {
   return (
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:`1px solid #edf2f7`}}>
-      <span style={{fontSize:12,color:C.muted,...fnt}}>{label}</span>
-      <span style={{fontSize:12,color:color||C.text,fontWeight:700,...fnt}}>{value}</span>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid #eef2f7`}}>
+      <span style={{fontSize:13,color:C.muted,...fnt}}>{label}</span>
+      <span style={{fontSize:13,color:color||C.text,fontWeight:600,...fnt}}>{value}</span>
     </div>
   );
 }
 
+const fieldLabel = {fontSize:11.5,color:C.muted,marginBottom:5,fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase"};
+const fieldBase = {width:"100%",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:13,padding:"9px 12px",boxSizing:"border-box",outline:"none"};
+
 function FInput({label, value, onChange, placeholder, type="text", full}) {
   return (
-    <div style={{marginBottom:10,flex:full?"1":""}}>
-      {label && <div style={{fontSize:11,color:C.muted,marginBottom:4,...fnt,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>}
-      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||""} style={{
-        width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,
-        color:C.text,fontSize:12,padding:"7px 10px",boxSizing:"border-box",outline:"none",...fnt
-      }}/>
+    <div style={{marginBottom:12,flex:full?"1":""}}>
+      {label && <div style={{...fieldLabel,...fnt}}>{label}</div>}
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||""} style={{...fieldBase,...fnt}}/>
     </div>
   );
 }
 
 function FTextarea({label, value, onChange, rows=3, placeholder}) {
   return (
-    <div style={{marginBottom:10}}>
-      {label && <div style={{fontSize:11,color:C.muted,marginBottom:4,...fnt,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>}
-      <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||""} rows={rows} style={{
-        width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,
-        color:C.text,fontSize:12,padding:"7px 10px",boxSizing:"border-box",outline:"none",resize:"vertical",...fnt
-      }}/>
+    <div style={{marginBottom:12}}>
+      {label && <div style={{...fieldLabel,...fnt}}>{label}</div>}
+      <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||""} rows={rows} style={{...fieldBase,resize:"vertical",lineHeight:1.6,...fnt}}/>
     </div>
   );
 }
 
 function FSelect({label, value, onChange, options}) {
   return (
-    <div style={{marginBottom:10}}>
-      {label && <div style={{fontSize:11,color:C.muted,marginBottom:4,...fnt,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>}
-      <select value={value} onChange={e=>onChange(e.target.value)} style={{
-        width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,
-        color:C.text,fontSize:12,padding:"7px 10px",outline:"none",...fnt
-      }}>
+    <div style={{marginBottom:12}}>
+      {label && <div style={{...fieldLabel,...fnt}}>{label}</div>}
+      <select value={value} onChange={e=>onChange(e.target.value)} style={{...fieldBase,...fnt}}>
         {options.map(o=><option key={o} value={o}>{o}</option>)}
       </select>
     </div>
@@ -139,12 +133,12 @@ function FSelect({label, value, onChange, options}) {
 
 function RadioGroup({label, options, value, onChange}) {
   return (
-    <div style={{marginBottom:10}}>
-      {label && <div style={{fontSize:11,color:C.muted,marginBottom:6,...fnt,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>}
-      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+    <div style={{marginBottom:12}}>
+      {label && <div style={{...fieldLabel,...fnt}}>{label}</div>}
+      <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
         {options.map(o=>(
-          <label key={o} style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",...fnt,fontSize:12,color:value===o?C.teal:C.muted}}>
-            <input type="radio" checked={value===o} onChange={()=>onChange(o)} style={{accentColor:C.teal}}/>
+          <label key={o} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",...fnt,fontSize:13,fontWeight:value===o?600:400,color:value===o?C.teal:C.muted}}>
+            <input type="radio" checked={value===o} onChange={()=>onChange(o)} style={{accentColor:C.teal,width:14,height:14}}/>
             {o}
           </label>
         ))}
@@ -154,13 +148,14 @@ function RadioGroup({label, options, value, onChange}) {
 }
 
 function BehRow({label, rep, obs, onRep, onObs}) {
+  const sel = {background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:7,color:C.text,fontSize:12,padding:"5px 8px",...fnt};
   return (
-    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:8,alignItems:"center",marginBottom:6}}>
-      <span style={{fontSize:12,color:C.text,...fnt}}>{label}</span>
-      <select value={rep} onChange={e=>onRep(e.target.value)} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.text,fontSize:11,padding:"4px 6px",...fnt}}>
+    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:10,alignItems:"center",marginBottom:8,padding:"4px 0",borderBottom:`1px solid #f0f4f8`}}>
+      <span style={{fontSize:13,color:C.text,fontWeight:500,...fnt}}>{label}</span>
+      <select value={rep} onChange={e=>onRep(e.target.value)} style={sel}>
         {["—","Normal","Mildly impaired","Moderately impaired","Severely impaired","Absent","Present"].map(o=><option key={o}>{o}</option>)}
       </select>
-      <select value={obs} onChange={e=>onObs(e.target.value)} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.text,fontSize:11,padding:"4px 6px",...fnt}}>
+      <select value={obs} onChange={e=>onObs(e.target.value)} style={sel}>
         {["—","Normal","Mildly impaired","Moderately impaired","Severely impaired","Absent","Present"].map(o=><option key={o}>{o}</option>)}
       </select>
     </div>
@@ -171,52 +166,52 @@ function SliderScore({label, value, max, onChange}) {
   const pct = max>0 ? value/max : 0;
   const col = pct>=0.7?C.green:pct>=0.4?C.accent:C.red;
   return (
-    <div style={{marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-        <span style={{fontSize:12,color:C.muted,...fnt}}>{label}</span>
-        <span style={{fontSize:12,color:col,fontWeight:700,...fnt}}>{value}/{max} <span style={{fontSize:10,color:C.muted}}>({Math.round(pct*100)}%)</span></span>
+    <div style={{marginBottom:14}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+        <span style={{fontSize:13,color:C.muted,fontWeight:500,...fnt}}>{label}</span>
+        <span style={{fontSize:13,color:col,fontWeight:700,...fnt}}>{value}/{max} <span style={{fontSize:11,color:C.muted,fontWeight:400}}>({Math.round(pct*100)}%)</span></span>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <input type="range" min={0} max={max} value={value} onChange={e=>onChange(Number(e.target.value))} style={{flex:1,accentColor:col}}/>
-        <input type="number" min={0} max={max} value={value} onChange={e=>onChange(Math.min(max,Math.max(0,Number(e.target.value))))} style={{width:44,background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.text,fontSize:11,padding:"3px 5px",textAlign:"center",...fnt,outline:"none"}}/>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <input type="range" min={0} max={max} value={value} onChange={e=>onChange(Number(e.target.value))} style={{flex:1,accentColor:col,height:4}}/>
+        <input type="number" min={0} max={max} value={value} onChange={e=>onChange(Math.min(max,Math.max(0,Number(e.target.value))))} style={{width:48,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:7,color:C.text,fontSize:12,fontWeight:600,padding:"4px 6px",textAlign:"center",...fnt,outline:"none"}}/>
       </div>
-      <div style={{height:4,borderRadius:2,background:C.border,marginTop:4}}>
-        <div style={{height:"100%",width:`${pct*100}%`,background:col,borderRadius:2,transition:"width 0.3s"}}/>
+      <div style={{height:5,borderRadius:3,background:"#e9eef5",marginTop:6}}>
+        <div style={{height:"100%",width:`${pct*100}%`,background:col,borderRadius:3,transition:"width 0.3s"}}/>
       </div>
     </div>
   );
 }
 
 function AQGauge({aq}) {
-  const pct=aq/100, r=52, circ=2*Math.PI*r;
+  const pct=aq/100, r=54, circ=2*Math.PI*r;
   const col=aq>=75?C.green:aq>=50?C.accent:C.red;
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-      <svg width={124} height={124}>
-        <circle cx={62} cy={62} r={r} fill="none" stroke="#e2e8f0" strokeWidth={9}/>
-        <circle cx={62} cy={62} r={r} fill="none" stroke={col} strokeWidth={9}
+      <svg width={132} height={132}>
+        <circle cx={66} cy={66} r={r} fill="none" stroke="#e9eef5" strokeWidth={10}/>
+        <circle cx={66} cy={66} r={r} fill="none" stroke={col} strokeWidth={10}
           strokeDasharray={`${pct*circ} ${circ}`} strokeLinecap="round"
-          transform="rotate(-90 62 62)" style={{transition:"stroke-dasharray 0.8s"}}/>
-        <text x={62} y={57} textAnchor="middle" fill={C.text} fontSize={22} fontWeight="800" fontFamily="sans-serif">{aq}</text>
-        <text x={62} y={73} textAnchor="middle" fill={C.muted} fontSize={10} fontFamily="sans-serif">/ 100 AQ</text>
+          transform="rotate(-90 66 66)" style={{transition:"stroke-dasharray 0.8s",filter:`drop-shadow(0 2px 6px ${col}55)`}}/>
+        <text x={66} y={61} textAnchor="middle" fill={C.text} fontSize={26} fontWeight="800" fontFamily="Inter, sans-serif">{aq}</text>
+        <text x={66} y={78} textAnchor="middle" fill={C.muted} fontSize={11} fontFamily="Inter, sans-serif">/ 100 AQ</text>
       </svg>
     </div>
   );
 }
 
 function Chip({text, color}) {
-  return <span style={{display:"inline-block",background:(color||C.teal)+"18",border:`1px solid ${(color||C.teal)}33`,color:color||C.teal,borderRadius:4,padding:"2px 8px",fontSize:11,marginRight:4,marginBottom:4,...fnt}}>{text}</span>;
+  return <span style={{display:"inline-block",background:(color||C.teal)+"18",border:`1px solid ${(color||C.teal)}44`,color:color||C.teal,borderRadius:5,padding:"3px 10px",fontSize:12,fontWeight:600,marginRight:5,marginBottom:5,...fnt}}>{text}</span>;
 }
 
 function NavBtn({label, active, onClick}) {
   return (
     <button onClick={onClick} style={{
-      padding:"9px 14px",border:"1px solid",borderRadius:7,cursor:"pointer",
-      borderColor:active?C.teal:C.border,
+      padding:"10px 18px",border:"1.5px solid",borderRadius:8,cursor:"pointer",
+      borderColor:active?C.teal:"#dde4ef",
       background:active?C.teal:"#ffffff",
-      color:active?"#ffffff":C.muted,
-      fontSize:11,fontWeight:700,...fnt,whiteSpace:"nowrap",transition:"all 0.15s",
-      boxShadow:active?"0 2px 8px rgba(2,132,199,0.25)":"0 1px 2px rgba(0,0,0,0.04)"
+      color:active?"#ffffff":"#64748b",
+      fontSize:12,fontWeight:600,...fnt,whiteSpace:"nowrap",transition:"all 0.15s",letterSpacing:"0.01em",
+      boxShadow:active?"0 2px 10px rgba(3,105,161,0.28)":"0 1px 2px rgba(0,0,0,0.05)"
     }}>{label}</button>
   );
 }
@@ -1001,39 +996,39 @@ Perform complete multi-level linguistic analysis.`
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,...fnt,paddingBottom:60}}>
       {/* Header */}
-      <div style={{background:"#ffffff",borderBottom:`1px solid ${C.border}`,padding:"20px 28px 16px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)",borderTop:`4px solid ${C.teal}`}}>
-        <div style={{maxWidth:960,margin:"0 auto"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{width:40,height:40,borderRadius:10,background:`linear-gradient(135deg,${C.teal},#0ea5e9)`,border:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,boxShadow:"0 4px 12px rgba(2,132,199,0.3)"}}>⬡</div>
+      <div style={{background:"#ffffff",borderBottom:`1px solid ${C.border}`,padding:"18px 32px 0",boxShadow:"0 1px 0 #e2e8f0, 0 2px 12px rgba(15,23,42,0.06)",borderTop:`4px solid ${C.teal}`}}>
+        <div style={{maxWidth:980,margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:14,paddingBottom:14,borderBottom:`1px solid #f0f4f8`}}>
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <div style={{width:44,height:44,borderRadius:12,background:`linear-gradient(135deg,${C.teal} 0%,#0ea5e9 100%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:`0 4px 14px rgba(3,105,161,0.35)`}}>⬡</div>
               <div>
-                <h1 style={{margin:0,fontSize:22,fontWeight:800,color:C.text,letterSpacing:"-0.02em"}}>Aphasia<span style={{color:C.teal}}>Lens</span></h1>
-                <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>Bilingual Clinical Assessment Tool · Kannada–English</div>
+                <h1 style={{margin:0,fontSize:24,fontWeight:900,color:C.text,letterSpacing:"-0.03em",...fnt}}>Aphasia<span style={{color:C.teal}}>Lens</span></h1>
+                <div style={{fontSize:11,color:C.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:2,fontWeight:500,...fnt}}>Bilingual Clinical Assessment · Kannada–English</div>
               </div>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
               {/* Language Toggle */}
-              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+              <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:8,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
                 {[["en","English"],["kn","ಕನ್ನಡ"]].map(([v,l])=>(
-                  <button key={v} onClick={()=>setLang(v)} style={{padding:"6px 14px",border:"none",background:lang===v?C.teal:"#f8fafc",color:lang===v?"#ffffff":C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
+                  <button key={v} onClick={()=>setLang(v)} style={{padding:"7px 16px",border:"none",background:lang===v?C.teal:"transparent",color:lang===v?"#ffffff":C.muted,fontSize:12,fontWeight:600,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
                 ))}
               </div>
               {/* Session Toggle */}
-              <div style={{display:"flex",border:`1px solid ${C.border}`,borderRadius:7,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+              <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:8,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
                 {[["pre","Pre-Rx"],["post","Post-Rx"]].map(([v,l])=>(
-                  <button key={v} onClick={()=>setSession(v)} style={{padding:"6px 14px",border:"none",background:session===v?(v==="pre"?C.teal:C.green):"#f8fafc",color:session===v?"#ffffff":C.muted,fontSize:11,fontWeight:700,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
+                  <button key={v} onClick={()=>setSession(v)} style={{padding:"7px 16px",border:"none",background:session===v?(v==="pre"?C.teal:C.green):"transparent",color:session===v?"#ffffff":C.muted,fontSize:12,fontWeight:600,cursor:"pointer",...fnt,transition:"all 0.15s"}}>{l}</button>
                 ))}
               </div>
             </div>
           </div>
           {/* Nav */}
-          <div style={{display:"flex",gap:6,marginTop:14,overflowX:"auto",paddingBottom:2}}>
+          <div style={{display:"flex",gap:6,paddingTop:12,paddingBottom:0,overflowX:"auto"}}>
             {pages.map(p=><NavBtn key={p.id} label={p.label} active={page===p.id} onClick={()=>setPage(p.id)}/>)}
           </div>
         </div>
       </div>
 
-      <div style={{maxWidth:960,margin:"0 auto",padding:"24px 28px 0"}}>
+      <div style={{maxWidth:980,margin:"0 auto",padding:"28px 32px 0"}}>
 
         {/* ── PAGE 1: Case History ── */}
         {page==="casehistory" && (
@@ -1070,7 +1065,7 @@ Perform complete multi-level linguistic analysis.`
               <FTextarea label="Investigations, Reports, Rx & Advice" value={ch.medicalRecords} onChange={v=>setCh(p=>({...p,medicalRecords:v}))} rows={4} placeholder="CT/MRI findings, medications, physician advice, referrals..."/>
             </Card>
 
-            <button onClick={()=>setPage("behaviour")} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #06b6d433",...fnt}}>
+            <button onClick={()=>setPage("behaviour")} style={{width:"100%",padding:"14px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:10,color:"#ffffff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:"0.01em",boxShadow:"0 4px 16px rgba(3,105,161,0.35)",...fnt}}>
               Next: Behaviour & General Assessment →
             </button>
           </div>
@@ -1080,10 +1075,10 @@ Perform complete multi-level linguistic analysis.`
         {page==="behaviour" && (
           <div>
             <Card title="General Behaviour" icon="🧩" accent={C.accent}>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:8,marginBottom:10}}>
-                <span style={{fontSize:11,color:C.muted,...fnt,fontWeight:700}}>Behaviour</span>
-                <span style={{fontSize:11,color:C.teal,...fnt,fontWeight:700,textAlign:"center"}}>Reported</span>
-                <span style={{fontSize:11,color:C.green,...fnt,fontWeight:700,textAlign:"center"}}>Observed</span>
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:10,marginBottom:10,padding:"8px 0",borderBottom:`2px solid ${C.border}`}}>
+                <span style={{fontSize:12,color:C.muted,...fnt,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase"}}>Behaviour</span>
+                <span style={{fontSize:12,color:C.teal,...fnt,fontWeight:700,textAlign:"center",letterSpacing:"0.05em",textTransform:"uppercase"}}>Reported</span>
+                <span style={{fontSize:12,color:C.green,...fnt,fontWeight:700,textAlign:"center",letterSpacing:"0.05em",textTransform:"uppercase"}}>Observed</span>
               </div>
               {[["aggressiveness","Aggressiveness"],["temperTantrums","Temper Tantrums"],["depression","Depression"],["motivation","Motivation"],["attention","Attention & Concentration"],["interest","Interest in Activities"],["needForComm","Need for Communication"]].map(([k,l])=>(
                 <BehRow key={k} label={l}
@@ -1106,7 +1101,7 @@ Perform complete multi-level linguistic analysis.`
 
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setPage("casehistory")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
-              <button onClick={()=>setPage("specfn")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: Specific Functions →</button>
+              <button onClick={()=>setPage("specfn")} style={{flex:3,padding:"13px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:9,color:"#ffffff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:"0.01em",boxShadow:"0 2px 12px rgba(3,105,161,0.3)",...fnt}}>Next: Specific Functions →</button>
             </div>
           </div>
         )}
@@ -1187,7 +1182,7 @@ Perform complete multi-level linguistic analysis.`
 
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setPage("behaviour")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
-              <button onClick={()=>setPage("wab")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Next: WAB Administration ({lang==="en"?"English":"Kannada"}) →</button>
+              <button onClick={()=>setPage("wab")} style={{flex:3,padding:"13px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:9,color:"#ffffff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:"0.01em",boxShadow:"0 2px 12px rgba(3,105,161,0.3)",...fnt}}>Next: WAB Administration ({lang==="en"?"English":"Kannada"}) →</button>
             </div>
           </div>
         )}
@@ -1196,10 +1191,10 @@ Perform complete multi-level linguistic analysis.`
         {page==="wab" && (
           <div>
             <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderLeft:`4px solid ${C.teal}`,borderRadius:10,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-              <div style={{fontSize:13,color:C.text,fontWeight:700,...fnt}}>
-                Administering WAB in: <span style={{color:C.teal}}>{lang==="en"?"English":"Kannada–English Bilingual"}</span>
+              <div style={{fontSize:14,color:C.text,fontWeight:600,...fnt}}>
+                Administering WAB in: <span style={{color:C.teal,fontWeight:700}}>{lang==="en"?"English":"Kannada–English Bilingual"}</span>
               </div>
-              <div style={{fontSize:11,color:C.muted,...fnt}}>Session: <span style={{color:session==="pre"?C.teal:C.green,fontWeight:700}}>{session==="pre"?"Pre-Intervention":"Post-Intervention"}</span></div>
+              <div style={{fontSize:12,color:C.muted,...fnt}}>Session: <span style={{color:session==="pre"?C.teal:C.green,fontWeight:700}}>{session==="pre"?"Pre-Intervention":"Post-Intervention"}</span></div>
             </div>
 
             {/* I. Spontaneous Speech */}
@@ -1216,21 +1211,21 @@ Perform complete multi-level linguistic analysis.`
                 <SliderScore label="Information Content" value={wab.ss_info} max={10} onChange={v=>updateWab("ss_info",v)}/>
                 <SliderScore label="Fluency / Phrase Length / Melodic Line" value={wab.ss_flu} max={10} onChange={v=>updateWab("ss_flu",v)}/>
               </div>
-              <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,marginTop:4}}>SS Total: {wab.ss_info+wab.ss_flu} / 20</div>
+              <div style={{fontSize:14,color:C.accent,fontWeight:700,...fnt,marginTop:8,padding:"6px 0"}}>SS Total: {wab.ss_info+wab.ss_flu} / 20</div>
             </Card>
 
             {/* II. AVC */}
             <Card title="II. Auditory Verbal Comprehension (Max: 200)" icon="👂" accent={C.purple}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
                 <div>
-                  <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>A. Yes/No Questions (Max 60)</div>
+                  <div style={{fontSize:12,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>A. Yes/No Questions (Max 60)</div>
                   <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
-                    {WAB[lang].yesno.map((q,i)=><div key={i} style={{fontSize:11,color:C.muted,padding:"3px 0",borderBottom:`1px solid ${C.border}22`,...fnt}}>{i+1}. {q}</div>)}
+                    {WAB[lang].yesno.map((q,i)=><div key={i} style={{fontSize:12.5,color:C.muted,padding:"4px 0",borderBottom:`1px solid #f0f4f8`,...fnt}}>{i+1}. {q}</div>)}
                   </div>
                   <SliderScore label="Score" value={wab.avc_yesno} max={60} onChange={v=>updateWab("avc_yesno",v)}/>
                 </div>
                 <div>
-                  <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>B. Word Recognition (Max 60)</div>
+                  <div style={{fontSize:12,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>B. Word Recognition (Max 60)</div>
                   <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt,lineHeight:1.9}}>
                     Real objects · Drawn objects · Forms · Letters · Numbers · Colors · Furniture · Body parts · Fingers · Right-Left
                     <div style={{marginTop:6,color:C.text,fontStyle:"italic"}}>Score 1 pt per correct identification</div>
@@ -1238,7 +1233,7 @@ Perform complete multi-level linguistic analysis.`
                   <SliderScore label="Score" value={wab.avc_wordrec} max={60} onChange={v=>updateWab("avc_wordrec",v)}/>
                 </div>
                 <div>
-                  <div style={{fontSize:11,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>C. Sequential Commands (Max 80)</div>
+                  <div style={{fontSize:12,color:C.purple,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>C. Sequential Commands (Max 80)</div>
                   <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:180,overflowY:"auto",marginBottom:8}}>
                     {WAB[lang].commands.map((c,i)=>(
                       <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.border}22`}}>
@@ -1250,7 +1245,7 @@ Perform complete multi-level linguistic analysis.`
                   <SliderScore label="Score" value={wab.avc_seqcmd} max={80} onChange={v=>updateWab("avc_seqcmd",v)}/>
                 </div>
               </div>
-              <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,marginTop:4}}>AVC Total: {wab.avc_yesno+wab.avc_wordrec+wab.avc_seqcmd} / 200</div>
+              <div style={{fontSize:14,color:C.accent,fontWeight:700,...fnt,marginTop:8,padding:"6px 0"}}>AVC Total: {wab.avc_yesno+wab.avc_wordrec+wab.avc_seqcmd} / 200</div>
             </Card>
 
             {/* III. Repetition */}
@@ -1270,30 +1265,30 @@ Perform complete multi-level linguistic analysis.`
             <Card title="IV. Naming (Max: 100)" icon="🏷" accent={C.accent}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                 <div>
-                  <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>A. Object Naming (Max 60)</div>
+                  <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>A. Object Naming (Max 60)</div>
                   <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,maxHeight:160,overflowY:"auto",marginBottom:8}}>
-                    {WAB[lang].naming_obj.map((o,i)=><div key={i} style={{fontSize:11,color:C.muted,padding:"3px 0",borderBottom:`1px solid ${C.border}22`,...fnt}}>{i+1}. {o}</div>)}
+                    {WAB[lang].naming_obj.map((o,i)=><div key={i} style={{fontSize:12.5,color:C.muted,padding:"4px 0",borderBottom:`1px solid #f0f4f8`,...fnt}}>{i+1}. {o}</div>)}
                   </div>
                   <SliderScore label="Object Naming" value={wab.nam_obj} max={60} onChange={v=>updateWab("nam_obj",v)}/>
                 </div>
                 <div>
-                  <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>B. Word Fluency (Max 20)</div>
+                  <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>B. Word Fluency (Max 20)</div>
                   <div style={{background:"#f8fafc",borderRadius:7,border:`1px solid ${C.border}`,padding:10,marginBottom:8,fontSize:11,color:C.muted,...fnt}}>Name as many animals as possible in 1 minute. 1 pt per unique animal (max 20)</div>
                   <SliderScore label="Word Fluency" value={wab.nam_flu} max={20} onChange={v=>updateWab("nam_flu",v)}/>
-                  <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6,marginTop:10}}>C. Sentence Completion (Max 10)</div>
+                  <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6,marginTop:10}}>C. Sentence Completion (Max 10)</div>
                   {WAB[lang].sentence_completion.map((s,i)=><div key={i} style={{fontSize:11,color:C.muted,...fnt,padding:"2px 0"}}>{i+1}. {s}</div>)}
                   <SliderScore label="Sentence Completion" value={wab.nam_sc} max={10} onChange={v=>updateWab("nam_sc",v)}/>
-                  <div style={{fontSize:11,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6,marginTop:10}}>D. Responsive Speech (Max 10)</div>
+                  <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6,marginTop:10}}>D. Responsive Speech (Max 10)</div>
                   {WAB[lang].responsive.map((s,i)=><div key={i} style={{fontSize:11,color:C.muted,...fnt,padding:"2px 0"}}>{i+1}. {s}</div>)}
                   <SliderScore label="Responsive Speech" value={wab.nam_rs} max={10} onChange={v=>updateWab("nam_rs",v)}/>
                 </div>
               </div>
-              <div style={{fontSize:12,color:C.accent,fontWeight:700,...fnt,marginTop:4}}>Naming Total: {wab.nam_obj+wab.nam_flu+wab.nam_sc+wab.nam_rs} / 100</div>
+              <div style={{fontSize:14,color:C.accent,fontWeight:700,...fnt,marginTop:8,padding:"6px 0"}}>Naming Total: {wab.nam_obj+wab.nam_flu+wab.nam_sc+wab.nam_rs} / 100</div>
             </Card>
 
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setPage("specfn")} style={{flex:1,padding:"11px",background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",...fnt,boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>← Back</button>
-              <button onClick={()=>setPage("results")} style={{flex:3,padding:"11px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:8,color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",...fnt}}>Calculate AQ & Results →</button>
+              <button onClick={()=>setPage("results")} style={{flex:3,padding:"13px",background:`linear-gradient(135deg,#0369a1,#0284c7)`,border:"none",borderRadius:9,color:"#ffffff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:"0.01em",boxShadow:"0 2px 12px rgba(3,105,161,0.3)",...fnt}}>Calculate AQ & Results →</button>
             </div>
           </div>
         )}
@@ -1305,11 +1300,11 @@ Perform complete multi-level linguistic analysis.`
             <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderLeft:`5px solid ${typeCol}`,borderRadius:14,padding:"20px 24px",marginBottom:18,display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
               <AQGauge aq={curResult.aq}/>
               <div style={{flex:1,minWidth:200}}>
-                <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>
+                <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6,fontWeight:600}}>
                   {session==="pre"?"Pre-Intervention":"Post-Intervention"} Classification
                 </div>
-                <div style={{fontSize:26,fontWeight:800,color:typeCol,letterSpacing:"-0.02em",...fnt}}>{curResult.type} Aphasia</div>
-                <div style={{fontSize:13,color:C.muted,marginTop:4,...fnt}}>Severity: <span style={{color:curResult.aq>=75?C.green:curResult.aq>=50?C.accent:C.red,fontWeight:700}}>{curResult.sev}</span></div>
+                <div style={{fontSize:28,fontWeight:800,color:typeCol,letterSpacing:"-0.02em",...fnt,lineHeight:1.1}}>{curResult.type} Aphasia</div>
+                <div style={{fontSize:14,color:C.muted,marginTop:6,...fnt}}>Severity: <span style={{color:curResult.aq>=75?C.green:curResult.aq>=50?C.accent:C.red,fontWeight:700}}>{curResult.sev}</span></div>
                 <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap"}}>
                   {[["Fluency",curResult.fl?"Fluent":"Non-Fluent",curResult.fl?C.green:C.red],["Comprehension",curResult.gc?"Good":"Poor",curResult.gc?C.green:C.red],["Repetition",curResult.gr?"Intact":"Impaired",curResult.gr?C.green:C.red],["Naming",curResult.gn?"Intact":"Impaired",curResult.gn?C.green:C.red]].map(([l,v,c])=>(
                     <div key={l} style={{background:`${c}18`,border:`1px solid ${c}44`,borderRadius:6,padding:"4px 10px",fontSize:11,...fnt}}>
@@ -1375,19 +1370,19 @@ Perform complete multi-level linguistic analysis.`
 
             {/* Download WAB PDF — works without AI */}
             <button onClick={downloadPDF} style={{
-              width:"100%",padding:"13px",border:"none",borderRadius:9,color:C.white,fontSize:13,fontWeight:800,cursor:"pointer",...fnt,
-              background:`linear-gradient(135deg,#0f766e,#06b6d4)`,
-              boxShadow:"0 4px 20px #06b6d433",marginBottom:10,transition:"all 0.2s"
+              width:"100%",padding:"14px",border:"none",borderRadius:10,color:"#ffffff",fontSize:14,fontWeight:700,cursor:"pointer",...fnt,
+              background:`linear-gradient(135deg,#0f766e,#059669)`,
+              boxShadow:"0 4px 16px rgba(5,150,105,0.3)",marginBottom:12,transition:"all 0.2s",letterSpacing:"0.01em"
             }}>
               ⬇ Download WAB Assessment PDF Report
             </button>
 
-            {aiError && <div style={{padding:"10px 14px",background:C.red+"18",border:`1px solid ${C.red}44`,borderRadius:7,fontSize:12,color:C.red,...fnt,marginBottom:12}}>{aiError}</div>}
+            {aiError && <div style={{padding:"12px 16px",background:"#fef2f2",border:`1px solid #fca5a5`,borderRadius:8,fontSize:13,color:C.red,...fnt,marginBottom:14,fontWeight:500}}>{aiError}</div>}
 
             <button onClick={runAnalysis} disabled={aiLoading} style={{
-              width:"100%",padding:"14px",border:"none",borderRadius:9,color:C.white,fontSize:14,fontWeight:800,cursor:aiLoading?"not-allowed":"pointer",...fnt,
-              background:aiLoading?"#e2e8f0":`linear-gradient(135deg,#7c3aed,#0284c7)`,
-              boxShadow:aiLoading?"none":"0 4px 24px #7c3aed44",transition:"all 0.2s"
+              width:"100%",padding:"16px",border:"none",borderRadius:10,color:"#ffffff",fontSize:15,fontWeight:800,cursor:aiLoading?"not-allowed":"pointer",...fnt,
+              background:aiLoading?"#cbd5e1":`linear-gradient(135deg,#6d28d9,#0369a1)`,
+              boxShadow:aiLoading?"none":"0 4px 24px rgba(109,40,217,0.35)",transition:"all 0.2s",letterSpacing:"0.01em"
             }}>
               {aiLoading?"⏳  Generating AI Clinical Analysis…":"⬡  Generate AI Clinical Analysis & Intervention Plan"}
             </button>
@@ -1784,26 +1779,35 @@ Perform complete multi-level linguistic analysis.`
 
       {/* ── Footer ── */}
       <div style={{marginTop:48,borderTop:`1px solid ${C.border}`,background:"#ffffff",boxShadow:"0 -1px 4px rgba(0,0,0,0.04)"}}>
-        <div style={{maxWidth:960,margin:"0 auto",padding:"20px 28px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:20}}>
-          <div>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>About This Tool</div>
-            <div style={{fontSize:12,color:C.white,fontWeight:700,...fnt}}>AphasiaLens v2.0</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3,maxWidth:320,lineHeight:1.6}}>
-              A free bilingual (Kannada-English) WAB-based aphasia assessment and AI-assisted clinical analysis tool for Speech-Language Pathologists.
+        <div style={{maxWidth:980,margin:"0 auto",padding:"24px 32px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:24}}>
+          <div style={{maxWidth:320}}>
+            <div style={{fontSize:11,color:C.teal,fontWeight:700,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>AphasiaLens v2.0</div>
+            <div style={{fontSize:13,color:C.text,fontWeight:700,...fnt,marginBottom:4}}>Mr. Hemaraja Nayaka S.</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:6}}>Yenepoya Medical College Hospital</div>
+            <div style={{fontSize:11.5,color:C.muted,...fnt,lineHeight:1.7}}>
+              A free bilingual (Kannada–English) WAB-based aphasia assessment and AI-assisted clinical analysis tool for Speech-Language Pathologists.
             </div>
           </div>
           <div>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Powered By</div>
-            <div style={{fontSize:11,color:C.muted,...fnt}}>🤖 Claude (Anthropic) — AI Clinical Analysis</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3}}>🎙 Sarvam AI — Multilingual Speech Transcription</div>
-            <div style={{fontSize:11,color:C.muted,...fnt,marginTop:3}}>⚖️ Western Aphasia Battery (WAB) — Kertesz, 1982</div>
+            <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,marginBottom:10}}>Powered By</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:5}}>🤖 Claude (Anthropic) — AI Clinical Analysis</div>
+            <div style={{fontSize:12,color:C.muted,...fnt,marginBottom:5}}>🎙 Sarvam AI — Multilingual Speech Transcription</div>
+            <div style={{fontSize:12,color:C.muted,...fnt}}>⚖️ Western Aphasia Battery (WAB) — Kertesz, 1982</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:10,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Disclaimer</div>
-            <div style={{fontSize:10,color:C.muted,...fnt,marginTop:2,maxWidth:220,lineHeight:1.6,textAlign:"right"}}>
+            <div style={{fontSize:11,color:C.muted,...fnt,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,marginBottom:10}}>Disclaimer</div>
+            <div style={{fontSize:11.5,color:C.muted,...fnt,maxWidth:220,lineHeight:1.7,textAlign:"right"}}>
               For clinical use under qualified SLP supervision only. AI outputs are decision-support aids and do not replace clinical judgement.
             </div>
           </div>
+        </div>
+        {/* Bottom credit bar */}
+        <div style={{borderTop:`1px solid ${C.border}`,padding:"10px 32px",display:"flex",justifyContent:"center",alignItems:"center",gap:6,background:"#f8fafc"}}>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>Designed &amp; developed by</span>
+          <span style={{fontSize:11.5,color:C.teal,fontWeight:700,...fnt}}>Mr. Hemaraja Nayaka S.</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>·</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>Yenepoya Medical College Hospital</span>
+          <span style={{fontSize:11.5,color:C.muted,...fnt}}>· © {new Date().getFullYear()}</span>
         </div>
       </div>
     </div>

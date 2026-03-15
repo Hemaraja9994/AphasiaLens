@@ -1,3 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body, #root { height: 100%; background: #f0f4f8; }
+html, body, #root { height: 100%; background: #f1f5f9; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
 input[type=range] { -webkit-appearance: none; }
+input::placeholder, textarea::placeholder { color: #94a3b8; }
+input:focus, textarea:focus, select:focus { border-color: #0369a1 !important; box-shadow: 0 0 0 3px rgba(3,105,161,0.1) !important; }
+button { cursor: pointer; }
+h1, h2, h3, h4 { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
