@@ -28,6 +28,7 @@ Yenepoya Medical College Hospital, Mangaluru | RCI: A30294 | ISHA: L-13072161
 | Key | Value |
 |-----|-------|
 | `ANTHROPIC_API_KEY` | Your key from [console.anthropic.com](https://console.anthropic.com) |
+| `ANTHROPIC_MODEL` *(optional)* | Claude model to use. Default: `claude-sonnet-4-6`. Change this (then redeploy) when Anthropic retires a model — see the [model status list](https://platform.claude.com/docs/en/about-claude/model-deprecations). |
 
 The API key is stored server-side in a Netlify Function and is never sent to the browser.
 

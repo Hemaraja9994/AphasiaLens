@@ -1,5 +1,12 @@
 const https = require("https");
 
+// Claude model used for every AI analysis in AphasiaLens.
+// When Anthropic retires this model, set ANTHROPIC_MODEL in Netlify
+// (Project configuration → Environment variables) and redeploy — no code change.
+// Model status list: https://platform.claude.com/docs/en/about-claude/model-deprecations
+const DEFAULT_MODEL = "claude-sonnet-4-6";
+const MAX_TOKENS_CAP = 4096;
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -26,9 +33,24 @@ exports.handler = async (event) => {
     };
   }
 
+  let request;
+  try {
+    request = JSON.parse(event.body || "{}");
+  } catch {
+    return {
+      statusCode: 400,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "Invalid request body." }),
+    };
+  }
+  // The server, not the browser, decides the model and the output limit,
+  // so the API key cannot be used for other models or very long outputs.
+  request.model = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
+  request.max_tokens = Math.min(Number(request.max_tokens) || 2500, MAX_TOKENS_CAP);
+
   return new Promise((resolve) => {
     try {
-      const payload = event.body || "{}";
+      const payload = JSON.stringify(request);
       const options = {
         hostname: "api.anthropic.com",
         path: "/v1/messages",
