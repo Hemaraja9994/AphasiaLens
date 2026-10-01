@@ -75,6 +75,27 @@ const SYS = `You are a bilingual (Kannada-English) Speech-Language Pathologist s
   "prognosis":"<brief prognosis comment based on WAB profile and case history>"
 }`;
 
+// ─── Claude call via the secure Netlify proxy ────────────────────────────────
+// The proxy chooses the model (see netlify/functions/claude-proxy.js).
+// Returns the reply text; throws a readable error if the AI service fails.
+async function callClaude(payload) {
+  const res = await fetch("/.netlify/functions/claude-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const bodyText = await res.text();
+  let data;
+  try { data = JSON.parse(bodyText); }
+  catch { throw new Error(`AI service unavailable (HTTP ${res.status}). Please try again.`); }
+  if (!res.ok || data.type === "error" || data.error) {
+    const msg = typeof data.error === "string" ? data.error : data.error?.message;
+    throw new Error(msg || `AI service error (HTTP ${res.status})`);
+  }
+  // Join all text blocks (newer models can also return non-text blocks)
+  return (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+}
+
 // ─── Reusable UI ──────────────────────────────────────────────────────────────
 const fnt = { fontFamily:"'Inter', 'Segoe UI', system-ui, sans-serif" };
 
@@ -823,12 +844,7 @@ Additional clinical notes: ${specFn.additionalNotes||"None"}
 ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
 
     try {
-      const res = await fetch("/.netlify/functions/claude-proxy",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,system:SYS,messages:[{role:"user",content:prompt}]})
-      });
-      const data = await res.json();
-      const raw = data.content?.[0]?.text||"";
+      const raw = await callClaude({max_tokens:2500,system:SYS,messages:[{role:"user",content:prompt}]});
       // Robust JSON extraction — find outermost { } block
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found in response");
@@ -886,8 +902,7 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
       const fd = new FormData();
       fd.append("file", audioBlob, "recording.webm");
       fd.append("language_code", sarvamLang);
-      fd.append("model", "saaras:v2");
-      fd.append("with_timestamps", "false");
+      fd.append("model", "saaras:v4");
       const res = await fetch("https://api.sarvam.ai/speech-to-text", {
         method: "POST",
         headers: { "api-subscription-key": sarvamKey.trim() },
@@ -955,10 +970,8 @@ ${specFn.transcript?`Speech sample transcript:\n${specFn.transcript}`:""}`;
     if (!sarvamTranscript.trim()) { setSarvamError("Transcribe audio first before running analysis."); return; }
     setLingoLoading(true); setSarvamError("");
     try {
-      const res = await fetch("/.netlify/functions/claude-proxy", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model:"claude-sonnet-4-20250514", max_tokens:2500,
+      const raw = await callClaude({
+          max_tokens:2500,
           system: LINGO_SYS,
           messages:[{ role:"user", content:
             `Patient: ${ch.name||"Unknown"}, Age: ${ch.age||"?"}, Languages: ${ch.languagesSpoken||"Kannada, English"}, Aphasia type (WAB): ${curResult.type}
@@ -970,10 +983,7 @@ ${sarvamTranscript}
 """
 Perform complete multi-level linguistic analysis.`
           }]
-        })
       });
-      const data = await res.json();
-      const raw = data.content?.[0]?.text || "";
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found in response");
       setLingoResult(JSON.parse(jsonMatch[0]));
@@ -1519,7 +1529,7 @@ Perform complete multi-level linguistic analysis.`
             {/* API Key + Language Config */}
             <Card title="Sarvam AI Configuration" icon="🔑" accent={C.accent}>
               <div style={{background:`${C.accent}10`,border:`1px solid ${C.accent}33`,borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:C.muted,...fnt,lineHeight:1.7}}>
-                This module uses <b style={{color:C.accent}}>Sarvam AI</b> (saaras:v2) for multilingual Indian speech-to-text transcription, then <b style={{color:C.teal}}>Claude</b> for deep linguistic analysis. Get your free API key at <span style={{color:C.teal}}>cloud.sarvam.ai</span>
+                This module uses <b style={{color:C.accent}}>Sarvam AI</b> (Saaras v4) for multilingual Indian speech-to-text transcription, then <b style={{color:C.teal}}>Claude</b> for deep linguistic analysis. Get your free API key at <span style={{color:C.teal}}>cloud.sarvam.ai</span>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"flex-end"}}>
                 <div>
